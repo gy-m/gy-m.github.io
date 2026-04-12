@@ -142,32 +142,32 @@ td.actioncell { min-width:76px; }
         </div>
 
         <div style="margin-top:6px;">
-          <button type="button" id="toggleManualBtn" class="small" style="background:#f3f4f6;color:#374151;width:100%;">⚡ הוספה ידנית (ללא שמירה) <span id="toggleManualIcon">▾</span></button>
+          <button type="button" id="toggleManualBtn" class="small" style="background:#f3f4f6;color:#374151;width:100%;" aria-expanded="false" aria-controls="manualAddSection">⚡ הוספה ידנית (ללא שמירה) <span id="toggleManualIcon" aria-hidden="true">▾</span></button>
         </div>
-        <div id="manualAddSection" style="display:none; margin-top:10px; border-top:1px solid #e7edf5; padding-top:10px;">
+        <div id="manualAddSection" style="display:none; margin-top:10px; border-top:1px solid #e7edf5; padding-top:10px;" aria-hidden="true">
           <div class="custom-food-grid">
             <div class="field">
-              <label>שם המזון *</label>
+              <label for="manualName">שם המזון *</label>
               <input id="manualName" type="text" placeholder="שם המזון" autocomplete="off">
             </div>
             <div class="field">
-              <label>יחידה</label>
+              <label for="manualUnit">יחידה</label>
               <input id="manualUnit" type="text" placeholder="מנה">
             </div>
             <div class="field">
-              <label>קלוריות</label>
+              <label for="manualCal">קלוריות</label>
               <input id="manualCal" type="number" min="0" step="0.1" placeholder="0">
             </div>
             <div class="field">
-              <label>חלבון (גר׳)</label>
+              <label for="manualProtein">חלבון (גר׳)</label>
               <input id="manualProtein" type="number" min="0" step="0.1" placeholder="0">
             </div>
             <div class="field">
-              <label>פחמימות (גר׳)</label>
+              <label for="manualCarbs">פחמימות (גר׳)</label>
               <input id="manualCarbs" type="number" min="0" step="0.1" placeholder="0">
             </div>
             <div class="field">
-              <label>שומן (גר׳)</label>
+              <label for="manualFat">שומן (גר׳)</label>
               <input id="manualFat" type="number" min="0" step="0.1" placeholder="0">
             </div>
           </div>
@@ -667,8 +667,11 @@ document.getElementById("manualAddBtn").addEventListener("click", quickAddManual
 document.getElementById("toggleManualBtn").addEventListener("click", () => {
   const section = document.getElementById("manualAddSection");
   const icon = document.getElementById("toggleManualIcon");
+  const btn = document.getElementById("toggleManualBtn");
   const open = section.style.display === "none";
   section.style.display = open ? "block" : "none";
+  section.setAttribute("aria-hidden", open ? "false" : "true");
+  btn.setAttribute("aria-expanded", open ? "true" : "false");
   icon.textContent = open ? "▴" : "▾";
 });
 
