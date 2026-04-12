@@ -140,6 +140,41 @@ td.actioncell { min-width:76px; }
           <div id="quickFoodMenu" class="ac-menu"></div>
           <div class="helper">בתוך הטבלה יש גם × וגם כפתור נקה לכל שורה.</div>
         </div>
+
+        <div style="margin-top:6px;">
+          <button type="button" id="toggleManualBtn" class="small" style="background:#f3f4f6;color:#374151;width:100%;">⚡ הוספה ידנית (ללא שמירה) <span id="toggleManualIcon">▾</span></button>
+        </div>
+        <div id="manualAddSection" style="display:none; margin-top:10px; border-top:1px solid #e7edf5; padding-top:10px;">
+          <div class="custom-food-grid">
+            <div class="field">
+              <label>שם המזון *</label>
+              <input id="manualName" type="text" placeholder="שם המזון" autocomplete="off">
+            </div>
+            <div class="field">
+              <label>יחידה</label>
+              <input id="manualUnit" type="text" placeholder="מנה">
+            </div>
+            <div class="field">
+              <label>קלוריות</label>
+              <input id="manualCal" type="number" min="0" step="0.1" placeholder="0">
+            </div>
+            <div class="field">
+              <label>חלבון (גר׳)</label>
+              <input id="manualProtein" type="number" min="0" step="0.1" placeholder="0">
+            </div>
+            <div class="field">
+              <label>פחמימות (גר׳)</label>
+              <input id="manualCarbs" type="number" min="0" step="0.1" placeholder="0">
+            </div>
+            <div class="field">
+              <label>שומן (גר׳)</label>
+              <input id="manualFat" type="number" min="0" step="0.1" placeholder="0">
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <button id="manualAddBtn" class="small" style="background:#059669;color:#fff;">הוסף לשורה פנויה</button>
+          </div>
+        </div>
       </div>
 
       <div class="custom-food-section" id="customFoodSection">
@@ -251,7 +286,7 @@ function buildDefaultRows() {
         rows.push({
           id: `${dayIndex}-${mealIndex}-${i}`,
           date: day[0], day: day[1], meal,
-          food:"", unit:"", qty:"", cal:"", protein:"", carbs:"", fat:""
+          food:"", unit:"", qty:"", cal:"", protein:"", carbs:"", fat:"", manual: false
         });
       }
     });
@@ -297,9 +332,11 @@ function clearRow(row) {
   row.protein = "";
   row.carbs = "";
   row.fat = "";
+  row.manual = false;
 }
 
 function applyFood(row) {
+  if (row.manual) return;
   const food = getFoodByName(row.food);
   const qty = parseFloat(row.qty);
   if (!food) {
@@ -512,6 +549,7 @@ function initAutocompleteInputs() {
 
     attachAutocomplete(inputEl, menuEl, name => {
       state[idx].food = name;
+      state[idx].manual = false;
       if (!state[idx].qty) state[idx].qty = 1;
       applyFood(state[idx]);
       saveState();
@@ -524,6 +562,7 @@ function initAutocompleteInputs() {
       const exact = getFoodByName(v);
       if (exact) {
         state[idx].food = exact.name;
+        state[idx].manual = false;
         if (!state[idx].qty) state[idx].qty = 1;
         applyFood(state[idx]);
         saveState();
@@ -579,6 +618,60 @@ function quickAdd() {
 
 document.getElementById("quickAddBtn").addEventListener("click", quickAdd);
 
+function quickAddManual() {
+  const dayIndex = parseInt(document.getElementById("quickDay").value, 10);
+  const mealIndex = parseInt(document.getElementById("quickMeal").value, 10);
+  const name = document.getElementById("manualName").value.trim();
+  const unit = document.getElementById("manualUnit").value.trim() || "מנה";
+  const cal = parseFloat(document.getElementById("manualCal").value) || 0;
+  const protein = parseFloat(document.getElementById("manualProtein").value) || 0;
+  const carbs = parseFloat(document.getElementById("manualCarbs").value) || 0;
+  const fat = parseFloat(document.getElementById("manualFat").value) || 0;
+
+  if (!name) {
+    statusEl.textContent = "נא להזין שם מזון";
+    setTimeout(() => statusEl.textContent = "", 1800);
+    return;
+  }
+
+  const start = dayIndex * (MEALS.length * ROWS_PER_MEAL) + mealIndex * ROWS_PER_MEAL;
+  const end = start + ROWS_PER_MEAL;
+  let target = -1;
+  for (let i = start; i < end; i++) {
+    if (!state[i].food) { target = i; break; }
+  }
+  if (target === -1) target = end - 1;
+
+  state[target].food = name;
+  state[target].unit = unit;
+  state[target].qty = "";
+  state[target].cal = round1(cal);
+  state[target].protein = round1(protein);
+  state[target].carbs = round1(carbs);
+  state[target].fat = round1(fat);
+  state[target].manual = true;
+
+  saveState("הפריט נוסף");
+  render();
+
+  document.getElementById("manualName").value = "";
+  document.getElementById("manualUnit").value = "";
+  document.getElementById("manualCal").value = "";
+  document.getElementById("manualProtein").value = "";
+  document.getElementById("manualCarbs").value = "";
+  document.getElementById("manualFat").value = "";
+}
+
+document.getElementById("manualAddBtn").addEventListener("click", quickAddManual);
+
+document.getElementById("toggleManualBtn").addEventListener("click", () => {
+  const section = document.getElementById("manualAddSection");
+  const icon = document.getElementById("toggleManualIcon");
+  const open = section.style.display === "none";
+  section.style.display = open ? "block" : "none";
+  icon.textContent = open ? "▴" : "▾";
+});
+
 document.getElementById("importBtn").addEventListener("click", () => {
   document.getElementById("importFile").click();
 });
@@ -603,7 +696,8 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
       cal: row.cal ?? "",
       protein: row.protein ?? "",
       carbs: row.carbs ?? "",
-      fat: row.fat ?? ""
+      fat: row.fat ?? "",
+      manual: row.manual ?? false
     }));
     state.forEach(applyFood);
     saveState("הנתונים יובאו בהצלחה");
