@@ -349,15 +349,19 @@ function migrateRow(row) {
   return r;
 }
 
+function importRows(arr) {
+  return arr
+    .map(row => migrateRow(row))
+    .filter(r => r.food && r.dayIndex >= 0 && r.mealIndex >= 0);
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || !parsed.length) return [];
-    return parsed
-      .map(row => migrateRow(row))
-      .filter(r => r.food && r.dayIndex >= 0 && r.mealIndex >= 0);
+    return importRows(parsed);
   } catch(e) {
     return [];
   }
@@ -469,7 +473,7 @@ function render() {
           <td class="proteincell"><input class="metric" type="text" aria-label="חלבון" value="${row.protein}" readonly></td>
           <td class="carbscell"><input class="metric" type="text" aria-label="פחמימות" value="${row.carbs}" readonly></td>
           <td class="fatcell"><input class="metric" type="text" aria-label="שומן" value="${row.fat}" readonly></td>
-          <td class="actioncell"><button class="small reset-row" data-idx="${idx}" type="button">מחק</button></td>
+          <td class="actioncell"><button class="small delete-row" data-idx="${idx}" type="button">מחק</button></td>
         `;
         tbody.appendChild(rowEl);
       });
@@ -501,7 +505,7 @@ function bindEvents() {
     });
   });
 
-  document.querySelectorAll(".reset-row, .row-clear-x").forEach(btn => {
+  document.querySelectorAll(".delete-row, .row-clear-x").forEach(btn => {
     btn.addEventListener("click", e => {
       const idx = parseInt(e.target.dataset.idx, 10);
       state.splice(idx, 1);
@@ -666,7 +670,7 @@ function quickAdd() {
   const newRow = {
     dayIndex, mealIndex,
     date: DAYS[dayIndex][0], day: DAYS[dayIndex][1], meal: MEALS[mealIndex],
-    food: food.name, unit: "", qty, cal: "", protein: "", carbs: "", fat: "", manual: false
+    food: food.name, unit: food.unit, qty, cal: "", protein: "", carbs: "", fat: "", manual: false
   };
   applyFood(newRow);
   state.push(newRow);
@@ -737,9 +741,7 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
     if (!Array.isArray(imported)) {
       throw new Error("מבנה JSON לא תקין");
     }
-    state = imported
-      .map(row => migrateRow(row))
-      .filter(r => r.food && r.dayIndex >= 0 && r.mealIndex >= 0);
+    state = importRows(imported);
     state.forEach(applyFood);
     saveState("הנתונים יובאו בהצלחה");
     render();
