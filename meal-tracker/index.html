@@ -5,6 +5,15 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <title>מעקב ארוחות חכם לנייד</title>
+
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="מעקב ארוחות">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+
 <style>
 :root {
   --bg:#f4f7fb; --card:#fff; --grid:#d7dee8; --head:#eaf1f8; --sum:#f7fafc;
@@ -548,5 +557,16 @@ state.forEach(applyFood);
 initQuickAdd();
 render();
 </script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js').catch(function (err) {
+      console.log('SW registration failed', err);
+    });
+  });
+}
+</script>
+
 </body>
 </html>
