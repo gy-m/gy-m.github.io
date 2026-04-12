@@ -308,7 +308,6 @@ td.actioncell { min-width:76px; }
 const FOODS = [{"name": "חביתה 2 ביצים", "unit": "מנה", "cal": 180, "protein": 14, "carbs": 1, "fat": 14}, {"name": "פיתה כוסמין מיני", "unit": "יחידה", "cal": 120, "protein": 4, "carbs": 22, "fat": 1.5}, {"name": "יוגורט דנונה 0% תות", "unit": "גביע", "cal": 100, "protein": 10, "carbs": 12, "fat": 0}, {"name": "סלמון", "unit": "100 גרם", "cal": 208, "protein": 22, "carbs": 0, "fat": 13}, {"name": "אנטריקוט", "unit": "100 גרם", "cal": 250, "protein": 26, "carbs": 0, "fat": 17}, {"name": "ירקות", "unit": "100 גרם", "cal": 25, "protein": 1, "carbs": 5, "fat": 0.2}, {"name": "זיתים", "unit": "10 יחידות", "cal": 45, "protein": 0.3, "carbs": 1.2, "fat": 4.2}, {"name": "שיבולת שועל", "unit": "40 גרם", "cal": 150, "protein": 5, "carbs": 27, "fat": 3}, {"name": "חמאת בוטנים", "unit": "כף", "cal": 95, "protein": 4, "carbs": 3, "fat": 8}, {"name": "מנת שווארמה הודו", "unit": "מנה", "cal": 550, "protein": 38, "carbs": 35, "fat": 28}, {"name": "טחינה", "unit": "כף", "cal": 90, "protein": 2.5, "carbs": 3, "fat": 8}, {"name": "חזה עוף", "unit": "100 גרם", "cal": 165, "protein": 31, "carbs": 0, "fat": 3.6}, {"name": "בקבוק בירה", "unit": "330 מ״ל", "cal": 150, "protein": 1.5, "carbs": 13, "fat": 0}, {"name": "מנת וויסקי", "unit": "צ׳ייסר 44 מ״ל", "cal": 105, "protein": 0, "carbs": 0, "fat": 0}, {"name": "סלמי מעושן", "unit": "100 גרם", "cal": 407, "protein": 22, "carbs": 2, "fat": 35}, {"name": "פסטרמה פרגית", "unit": "100 גרם", "cal": 140, "protein": 21, "carbs": 2, "fat": 5}, {"name": "תפוח אדמה קטן", "unit": "יחידה", "cal": 90, "protein": 2, "carbs": 20, "fat": 0.1}];
 const DAYS = [["12.04", "א׳"], ["13.04", "ב׳"], ["14.04", "ג׳"], ["15.04", "ד׳"], ["16.04", "ה׳"], ["17.04", "ו׳"], ["18.04", "שבת"]];
 const MEALS = ["א\"ב", "א\"צ", "א\"ע"];
-const ROWS_PER_MEAL = 3;
 const STORAGE_KEY = "meal-tracker-v3";
 const CUSTOM_FOODS_KEY = "meal-tracker-custom-foods";
 
@@ -336,29 +335,31 @@ const statusEl = document.getElementById("status");
 const chartGrid = document.getElementById("chartGrid");
 
 function buildDefaultRows() {
-  const rows = [];
-  DAYS.forEach((day, dayIndex) => {
-    MEALS.forEach((meal, mealIndex) => {
-      for (let i = 0; i < ROWS_PER_MEAL; i++) {
-        rows.push({
-          id: `${dayIndex}-${mealIndex}-${i}`,
-          date: day[0], day: day[1], meal,
-          food:"", unit:"", qty:"", cal:"", protein:"", carbs:"", fat:"", manual: false
-        });
-      }
-    });
-  });
-  return rows;
+  return [];
+}
+
+function migrateRow(row) {
+  const r = { ...row };
+  if (r.dayIndex == null || r.dayIndex < 0) {
+    r.dayIndex = DAYS.findIndex(d => d[0] === r.date);
+  }
+  if (r.mealIndex == null || r.mealIndex < 0) {
+    r.mealIndex = MEALS.indexOf(r.meal);
+  }
+  return r;
 }
 
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return buildDefaultRows();
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length ? parsed : buildDefaultRows();
+    if (!Array.isArray(parsed) || !parsed.length) return [];
+    return parsed
+      .map(row => migrateRow(row))
+      .filter(r => r.food && r.dayIndex >= 0 && r.mealIndex >= 0);
   } catch(e) {
-    return buildDefaultRows();
+    return [];
   }
 }
 
@@ -419,9 +420,7 @@ function applyFood(row) {
 }
 
 function dayTotals(dayIndex) {
-  const start = dayIndex * (MEALS.length * ROWS_PER_MEAL);
-  const end = start + (MEALS.length * ROWS_PER_MEAL);
-  const rows = state.slice(start, end);
+  const rows = state.filter(r => r.dayIndex === dayIndex);
   const sum = key => round1(rows.reduce((acc, r) => acc + (parseFloat(r[key]) || 0), 0)) || 0;
   return { cal: sum("cal"), protein: sum("protein"), carbs: sum("carbs"), fat: sum("fat") };
 }
@@ -441,41 +440,46 @@ function renderChart() {
 
 function render() {
   tbody.innerHTML = "";
-  state.forEach((row, idx) => {
-    const rowEl = document.createElement("tr");
-    const localIndex = idx % ROWS_PER_MEAL;
-    const mealIndex = Math.floor((idx % (MEALS.length * ROWS_PER_MEAL)) / ROWS_PER_MEAL);
-    const dayIndex = Math.floor(idx / (MEALS.length * ROWS_PER_MEAL));
-    const isFirstOfMeal = localIndex === 0;
-    const isFirstOfDay = mealIndex === 0 && localIndex === 0;
-
-    rowEl.innerHTML = `
-      <td class="daycell datecell">${isFirstOfDay ? row.date : ""}</td>
-      <td class="daycell daynamecell">${isFirstOfDay ? row.day : ""}</td>
-      <td class="mealcell">${isFirstOfMeal ? row.meal : ""}</td>
-      <td class="foodcell">
-        <div class="ac-wrap">
-          <input class="ac-input food-input" data-idx="${idx}" type="text" autocomplete="off" placeholder="בחר או הקלד מזון" value="${row.food || ""}">
-          <button class="ac-clear row-clear-x" data-idx="${idx}" type="button" aria-label="נקה">×</button>
-        </div>
-      </td>
-      <td class="unitcell">${row.unit || ""}</td>
-      <td class="qtycell"><input class="qty" type="number" min="0" step="0.25" data-idx="${idx}" value="${row.qty}"></td>
-      <td class="calcell"><input class="metric" type="text" aria-label="קלוריות" value="${row.cal}" readonly></td>
-      <td class="proteincell"><input class="metric" type="text" aria-label="חלבון" value="${row.protein}" readonly></td>
-      <td class="carbscell"><input class="metric" type="text" aria-label="פחמימות" value="${row.carbs}" readonly></td>
-      <td class="fatcell"><input class="metric" type="text" aria-label="שומן" value="${row.fat}" readonly></td>
-      <td class="actioncell"><button class="small reset-row" data-idx="${idx}" type="button">נקה</button></td>
-    `;
-    tbody.appendChild(rowEl);
-
-    const isEndOfDay = idx % (MEALS.length * ROWS_PER_MEAL) === (MEALS.length * ROWS_PER_MEAL - 1);
-    if (isEndOfDay) {
+  DAYS.forEach((day, dayIndex) => {
+    let dayFirstRow = true;
+    let dayHasRows = false;
+    MEALS.forEach((meal, mealIndex) => {
+      const mealEntries = state
+        .map((r, i) => [r, i])
+        .filter(([r]) => r.dayIndex === dayIndex && r.mealIndex === mealIndex);
+      mealEntries.forEach(([row, idx], localIndex) => {
+        dayHasRows = true;
+        const isFirstOfMeal = localIndex === 0;
+        const isFirstOfDay = dayFirstRow;
+        if (isFirstOfDay) dayFirstRow = false;
+        const rowEl = document.createElement("tr");
+        rowEl.innerHTML = `
+          <td class="daycell datecell">${isFirstOfDay ? row.date : ""}</td>
+          <td class="daycell daynamecell">${isFirstOfDay ? row.day : ""}</td>
+          <td class="mealcell">${isFirstOfMeal ? row.meal : ""}</td>
+          <td class="foodcell">
+            <div class="ac-wrap">
+              <input class="ac-input food-input" data-idx="${idx}" type="text" autocomplete="off" placeholder="בחר או הקלד מזון" value="${row.food || ""}">
+              <button class="ac-clear row-clear-x" data-idx="${idx}" type="button" aria-label="נקה">×</button>
+            </div>
+          </td>
+          <td class="unitcell">${row.unit || ""}</td>
+          <td class="qtycell"><input class="qty" type="number" min="0" step="0.25" data-idx="${idx}" value="${row.qty}"></td>
+          <td class="calcell"><input class="metric" type="text" aria-label="קלוריות" value="${row.cal}" readonly></td>
+          <td class="proteincell"><input class="metric" type="text" aria-label="חלבון" value="${row.protein}" readonly></td>
+          <td class="carbscell"><input class="metric" type="text" aria-label="פחמימות" value="${row.carbs}" readonly></td>
+          <td class="fatcell"><input class="metric" type="text" aria-label="שומן" value="${row.fat}" readonly></td>
+          <td class="actioncell"><button class="small reset-row" data-idx="${idx}" type="button">מחק</button></td>
+        `;
+        tbody.appendChild(rowEl);
+      });
+    });
+    if (dayHasRows) {
       const totals = dayTotals(dayIndex);
       const summary = document.createElement("tr");
       summary.className = "summary";
       summary.innerHTML = `
-        <td class="datecell"></td><td class="daynamecell"></td><td class="total-label">סה״כ</td><td class="foodcell"></td><td class="unitcell"></td><td class="qtycell"></td>
+        <td class="datecell">${day[0]}</td><td class="daynamecell">${day[1]}</td><td class="total-label">סה״כ</td><td class="foodcell"></td><td class="unitcell"></td><td class="qtycell"></td>
         <td class="calcell">${totals.cal}</td><td class="proteincell">${totals.protein}</td><td class="carbscell">${totals.carbs}</td><td class="fatcell">${totals.fat}</td><td class="actioncell"></td>
       `;
       tbody.appendChild(summary);
@@ -500,8 +504,8 @@ function bindEvents() {
   document.querySelectorAll(".reset-row, .row-clear-x").forEach(btn => {
     btn.addEventListener("click", e => {
       const idx = parseInt(e.target.dataset.idx, 10);
-      clearRow(state[idx]);
-      saveState("השורה אופסה");
+      state.splice(idx, 1);
+      saveState("השורה נמחקה");
       render();
     });
   });
@@ -653,22 +657,19 @@ function quickAdd() {
   const dayIndex = parseInt(document.getElementById("quickDay").value, 10);
   const mealIndex = parseInt(document.getElementById("quickMeal").value, 10);
   const foodText = document.getElementById("quickFoodInput").value.trim();
-  const qty = document.getElementById("quickQty").value || 1;
+  const qty = parseFloat(document.getElementById("quickQty").value) || 1;
   const food = getFoodByName(foodText);
   if (!food) {
     statusEl.textContent = "בחר מזון מהרשימה";
     return;
   }
-  const start = dayIndex * (MEALS.length * ROWS_PER_MEAL) + mealIndex * ROWS_PER_MEAL;
-  const end = start + ROWS_PER_MEAL;
-  let target = -1;
-  for (let i = start; i < end; i++) {
-    if (!state[i].food) { target = i; break; }
-  }
-  if (target === -1) target = end - 1;
-  state[target].food = food.name;
-  state[target].qty = qty;
-  applyFood(state[target]);
+  const newRow = {
+    dayIndex, mealIndex,
+    date: DAYS[dayIndex][0], day: DAYS[dayIndex][1], meal: MEALS[mealIndex],
+    food: food.name, unit: "", qty, cal: "", protein: "", carbs: "", fat: "", manual: false
+  };
+  applyFood(newRow);
+  state.push(newRow);
   saveState("הפריט נוסף");
   render();
 }
@@ -691,23 +692,14 @@ function quickAddManual() {
     return;
   }
 
-  const start = dayIndex * (MEALS.length * ROWS_PER_MEAL) + mealIndex * ROWS_PER_MEAL;
-  const end = start + ROWS_PER_MEAL;
-  let target = -1;
-  for (let i = start; i < end; i++) {
-    if (!state[i].food) { target = i; break; }
-  }
-  if (target === -1) target = end - 1;
-
-  state[target].food = name;
-  state[target].unit = unit;
-  state[target].qty = "";
-  state[target].cal = round1(cal);
-  state[target].protein = round1(protein);
-  state[target].carbs = round1(carbs);
-  state[target].fat = round1(fat);
-  state[target].manual = true;
-
+  const newRow = {
+    dayIndex, mealIndex,
+    date: DAYS[dayIndex][0], day: DAYS[dayIndex][1], meal: MEALS[mealIndex],
+    food: name, unit, qty: "",
+    cal: round1(cal), protein: round1(protein), carbs: round1(carbs), fat: round1(fat),
+    manual: true
+  };
+  state.push(newRow);
   saveState("הפריט נוסף");
   render();
 
@@ -742,23 +734,12 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
   try {
     const text = await file.text();
     const imported = JSON.parse(text);
-    if (!Array.isArray(imported) || imported.length !== buildDefaultRows().length) {
+    if (!Array.isArray(imported)) {
       throw new Error("מבנה JSON לא תקין");
     }
-    state = imported.map(row => ({
-      id: row.id ?? "",
-      date: row.date ?? "",
-      day: row.day ?? "",
-      meal: row.meal ?? "",
-      food: row.food ?? "",
-      unit: row.unit ?? "",
-      qty: row.qty ?? "",
-      cal: row.cal ?? "",
-      protein: row.protein ?? "",
-      carbs: row.carbs ?? "",
-      fat: row.fat ?? "",
-      manual: row.manual ?? false
-    }));
+    state = imported
+      .map(row => migrateRow(row))
+      .filter(r => r.food && r.dayIndex >= 0 && r.mealIndex >= 0);
     state.forEach(applyFood);
     saveState("הנתונים יובאו בהצלחה");
     render();
@@ -772,7 +753,7 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
 
 document.getElementById("resetBtn").addEventListener("click", () => {
   if (!confirm("לאפס את כל הנתונים?")) return;
-  state = buildDefaultRows();
+  state = [];
   saveState("כל הנתונים אופסו");
   render();
 });
