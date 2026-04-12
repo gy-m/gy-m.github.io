@@ -64,6 +64,28 @@ input.metric { max-width:78px; text-align:center; background:#fcfdff; }
 td.foodcell { min-width:180px; text-align:right; position:relative; }
 td.unitcell { min-width:90px; }
 td.actioncell { min-width:76px; }
+.custom-food-section { background:#fbfdff; border:1px solid #e7edf5; border-radius:14px; padding:12px; }
+.custom-food-section .title { font-size:14px; font-weight:700; cursor:pointer; user-select:none; display:flex; justify-content:space-between; align-items:center; }
+.custom-food-section .toggle-icon { font-size:18px; color:var(--muted); transition:transform .2s; }
+.custom-food-section.open .toggle-icon { transform:rotate(45deg); }
+.custom-food-body { display:none; margin-top:10px; }
+.custom-food-section.open .custom-food-body { display:block; }
+.custom-food-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.custom-food-grid label { font-size:12px; color:var(--muted); }
+.custom-food-grid .field { display:flex; flex-direction:column; gap:3px; }
+.custom-food-list { margin-top:10px; }
+.custom-food-list-item { display:flex; justify-content:space-between; align-items:center; padding:7px 8px; border:1px solid #e7edf5; border-radius:8px; margin-bottom:5px; font-size:13px; background:#fff; }
+.custom-food-list-item .cf-name { font-weight:700; }
+.custom-food-list-item .cf-meta { color:var(--muted); font-size:12px; }
+.cf-del { background:#fee2e2; color:#991b1b; min-height:30px; padding:4px 10px; font-size:12px; }
+@media (min-width:600px) {
+  .custom-food-grid { grid-template-columns:repeat(3,1fr); }
+}
+@media (min-width:900px) {
+  .actions { width:auto; }
+  .quickadd-row { grid-template-columns:repeat(4, minmax(120px,1fr)); }
+  .custom-food-grid { grid-template-columns:repeat(6,1fr); }
+}
 .ac-wrap { position:relative; }
 .ac-input { padding-left:42px; }
 .ac-clear {
@@ -80,10 +102,7 @@ td.actioncell { min-width:76px; }
 .ac-item:hover, .ac-item.active { background:#f3f6fb; }
 .chip { display:inline-block; background:var(--chip); color:#1e3a8a; padding:4px 8px; border-radius:999px; font-size:12px; }
 .helper { color:var(--muted); font-size:12px; }
-@media (min-width:900px) {
-  .actions { width:auto; }
-  .quickadd-row { grid-template-columns:repeat(4, minmax(120px,1fr)); }
-}
+
 </style>
 </head>
 <body>
@@ -120,6 +139,45 @@ td.actioncell { min-width:76px; }
           </div>
           <div id="quickFoodMenu" class="ac-menu"></div>
           <div class="helper">בתוך הטבלה יש גם × וגם כפתור נקה לכל שורה.</div>
+        </div>
+      </div>
+
+      <div class="custom-food-section" id="customFoodSection">
+        <div class="title" id="customFoodToggle">
+          <span>הוסף מזון מותאם אישית</span>
+          <span class="toggle-icon">+</span>
+        </div>
+        <div class="custom-food-body">
+          <div class="custom-food-grid">
+            <div class="field">
+              <label>שם המזון *</label>
+              <input id="cfName" type="text" placeholder="למשל: גבינה צהובה" autocomplete="off">
+            </div>
+            <div class="field">
+              <label>יחידת בסיס *</label>
+              <input id="cfUnit" type="text" placeholder="למשל: 100 גרם">
+            </div>
+            <div class="field">
+              <label>קלוריות *</label>
+              <input id="cfCal" type="number" min="0" step="0.1" placeholder="קל׳">
+            </div>
+            <div class="field">
+              <label>חלבון (גר׳)</label>
+              <input id="cfProtein" type="number" min="0" step="0.1" placeholder="0">
+            </div>
+            <div class="field">
+              <label>פחמימות (גר׳)</label>
+              <input id="cfCarbs" type="number" min="0" step="0.1" placeholder="0">
+            </div>
+            <div class="field">
+              <label>שומן (גר׳)</label>
+              <input id="cfFat" type="number" min="0" step="0.1" placeholder="0">
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <button id="cfSaveBtn" class="small" style="background:#065f46;color:#fff;">שמור מזון מותאם</button>
+          </div>
+          <div class="custom-food-list" id="customFoodList"></div>
         </div>
       </div>
     </div>
@@ -160,6 +218,26 @@ const DAYS = [["12.04", "א׳"], ["13.04", "ב׳"], ["14.04", "ג׳"], ["15.04",
 const MEALS = ["א\"ב", "א\"צ", "א\"ע"];
 const ROWS_PER_MEAL = 3;
 const STORAGE_KEY = "meal-tracker-v3";
+const CUSTOM_FOODS_KEY = "meal-tracker-custom-foods";
+
+function loadCustomFoods() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_FOODS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch(e) { return []; }
+}
+
+let customFoods = loadCustomFoods();
+
+function saveCustomFoods() {
+  localStorage.setItem(CUSTOM_FOODS_KEY, JSON.stringify(customFoods));
+}
+
+function getAllFoods() {
+  return [...FOODS, ...customFoods];
+}
 
 const tbody = document.getElementById("tbody");
 const statusEl = document.getElementById("status");
@@ -203,7 +281,7 @@ function saveState(message = "נשמר אוטומטית") {
 }
 
 function getFoodByName(name) {
-  return FOODS.find(f => f.name === name);
+  return getAllFoods().find(f => f.name === name);
 }
 
 function round1(v) {
@@ -341,8 +419,9 @@ function attachAutocomplete(inputEl, menuEl, onSelect) {
 
   function matches(q) {
     const query = (q || "").trim().toLowerCase();
-    if (!query) return FOODS.slice(0, 8);
-    return FOODS.filter(f => f.name.toLowerCase().includes(query)).slice(0, 12);
+    const all = getAllFoods();
+    if (!query) return all.slice(0, 8);
+    return all.filter(f => f.name.toLowerCase().includes(query)).slice(0, 12);
   }
 
   function closeMenu() {
@@ -555,7 +634,87 @@ document.getElementById("exportBtn").addEventListener("click", () => {
 
 state.forEach(applyFood);
 initQuickAdd();
+initCustomFoodSection();
 render();
+
+function initCustomFoodSection() {
+  const section = document.getElementById("customFoodSection");
+  const toggle = document.getElementById("customFoodToggle");
+  const saveBtn = document.getElementById("cfSaveBtn");
+  const listEl = document.getElementById("customFoodList");
+
+  toggle.addEventListener("click", () => {
+    section.classList.toggle("open");
+  });
+
+  listEl.addEventListener("click", e => {
+    const btn = e.target.closest(".cf-del");
+    if (!btn) return;
+    const i = parseInt(btn.dataset.cfIndex, 10);
+    customFoods.splice(i, 1);
+    saveCustomFoods();
+    renderCustomFoodList();
+  });
+
+  saveBtn.addEventListener("click", () => {
+    const name = document.getElementById("cfName").value.trim();
+    const unit = document.getElementById("cfUnit").value.trim() || "מנה";
+    const cal = parseFloat(document.getElementById("cfCal").value) || 0;
+    const protein = parseFloat(document.getElementById("cfProtein").value) || 0;
+    const carbs = parseFloat(document.getElementById("cfCarbs").value) || 0;
+    const fat = parseFloat(document.getElementById("cfFat").value) || 0;
+
+    if (!name) {
+      statusEl.textContent = "נא להזין שם מזון";
+      setTimeout(() => statusEl.textContent = "", 1800);
+      return;
+    }
+    if (getAllFoods().some(f => f.name === name)) {
+      statusEl.textContent = "מזון בשם זה כבר קיים ברשימה";
+      setTimeout(() => statusEl.textContent = "", 1800);
+      return;
+    }
+
+    customFoods.push({ name, unit, cal, protein, carbs, fat, custom: true });
+    saveCustomFoods();
+
+    document.getElementById("cfName").value = "";
+    document.getElementById("cfUnit").value = "";
+    document.getElementById("cfCal").value = "";
+    document.getElementById("cfProtein").value = "";
+    document.getElementById("cfCarbs").value = "";
+    document.getElementById("cfFat").value = "";
+
+    renderCustomFoodList();
+    statusEl.textContent = `המזון "${name}" נוסף בהצלחה`;
+    setTimeout(() => statusEl.textContent = "", 2000);
+  });
+
+  renderCustomFoodList();
+}
+
+function renderCustomFoodList() {
+  const listEl = document.getElementById("customFoodList");
+  if (!listEl) return;
+  if (!customFoods.length) {
+    listEl.innerHTML = "";
+    return;
+  }
+  listEl.innerHTML = `<div style="font-size:13px;font-weight:700;margin-bottom:6px;color:var(--muted)">מזונות מותאמים שמורים:</div>` +
+    customFoods.map((f, i) => `
+      <div class="custom-food-list-item">
+        <div>
+          <div class="cf-name">${escapeHtml(f.name)}</div>
+          <div class="cf-meta">${escapeHtml(f.unit)} · ${escapeHtml(String(f.cal))} קל׳ · חלב׳ ${escapeHtml(String(f.protein))}ג׳ · פח׳ ${escapeHtml(String(f.carbs))}ג׳ · שומ׳ ${escapeHtml(String(f.fat))}ג׳</div>
+        </div>
+        <button class="small cf-del" data-cf-index="${i}" type="button">מחק</button>
+      </div>
+    `).join("");
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
 </script>
 
 <script>
