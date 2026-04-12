@@ -129,7 +129,7 @@ td.actioncell { min-width:76px; }
   td.foodcell { order:10; flex:0 0 100%; min-width:unset; }
 
   /* Metrics row with tiny labels */
-  td.unitcell    { order:20; display:flex; flex-direction:column; align-items:center; font-size:12px; color:var(--muted); }
+  td.unitcell    { order:20; display:flex; flex-direction:column; align-items:center; }
   td.qtycell     { order:21; display:flex; flex-direction:column; align-items:center; }
   td.calcell     { order:22; display:flex; flex-direction:column; align-items:center; }
   td.proteincell { order:23; display:flex; flex-direction:column; align-items:center; }
@@ -461,10 +461,10 @@ function render() {
       </td>
       <td class="unitcell">${row.unit || ""}</td>
       <td class="qtycell"><input class="qty" type="number" min="0" step="0.25" data-idx="${idx}" value="${row.qty}"></td>
-      <td class="calcell"><input class="metric" type="text" value="${row.cal}" readonly></td>
-      <td class="proteincell"><input class="metric" type="text" value="${row.protein}" readonly></td>
-      <td class="carbscell"><input class="metric" type="text" value="${row.carbs}" readonly></td>
-      <td class="fatcell"><input class="metric" type="text" value="${row.fat}" readonly></td>
+      <td class="calcell"><input class="metric" type="text" aria-label="קלוריות" value="${row.cal}" readonly></td>
+      <td class="proteincell"><input class="metric" type="text" aria-label="חלבון" value="${row.protein}" readonly></td>
+      <td class="carbscell"><input class="metric" type="text" aria-label="פחמימות" value="${row.carbs}" readonly></td>
+      <td class="fatcell"><input class="metric" type="text" aria-label="שומן" value="${row.fat}" readonly></td>
       <td class="actioncell"><button class="small reset-row" data-idx="${idx}" type="button">נקה</button></td>
     `;
     tbody.appendChild(rowEl);
