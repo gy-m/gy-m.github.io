@@ -91,6 +91,12 @@ td.actioncell { min-width:76px; }
 .week-picker .title { cursor:default; pointer-events:none; }
 .week-picker-input { width:auto; flex:0 0 auto; min-height:38px; padding:6px 10px; }
 .week-label { font-size:14px; color:var(--muted); font-weight:600; }
+.week-date-wrapper { position:relative; display:inline-flex; flex:0 0 auto; }
+.week-date-display { display:none; padding:6px 10px; min-height:38px; border:1px solid #cfd8e3; border-radius:8px; font-size:14px; background:#fff; cursor:pointer; line-height:26px; white-space:nowrap; }
+@media (max-width:599px) {
+  .week-date-display { display:inline-block; }
+  .week-date-wrapper .week-picker-input { position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; padding:0; }
+}
 
 /* Day header rows (collapsible days) */
 .day-toggle-btn {
@@ -210,6 +216,7 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
 
   input.qty    { max-width:40px; width:40px; font-size:12px; min-height:32px; padding:4px 2px; }
   input.metric { max-width:32px; width:32px; font-size:11px; min-height:28px; padding:2px; }
+  td.foodcell .ac-input { font-size:11px; padding-left:34px; }
 
   /* Summary card */
   tr.summary {
@@ -278,7 +285,10 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
 
       <div class="custom-food-section week-picker" id="weekPickerSection">
         <div class="title">📅 בחר שבוע</div>
-        <input type="date" id="weekDateInput" class="week-picker-input">
+        <span class="week-date-wrapper">
+          <span id="weekDateDisplay" class="week-date-display">DD/MM/YYYY</span>
+          <input type="date" id="weekDateInput" class="week-picker-input">
+        </span>
         <span id="weekLabel" class="week-label"></span>
       </div>
 
@@ -1104,12 +1114,22 @@ function updateWeekLabel() {
   lbl.textContent = `${DAYS[0][0]} – ${DAYS[6][0]}`;
 }
 
+function updateWeekDateDisplay(date) {
+  const display = document.getElementById("weekDateDisplay");
+  if (!display) return;
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  display.textContent = `${dd}/${mm}/${yyyy}`;
+}
+
 function initWeekPicker() {
   updateDaySelect();
   updateWeekLabel();
   const input = document.getElementById("weekDateInput");
   if (!input) return;
   input.value = formatDateISO(currentWeekSunday);
+  updateWeekDateDisplay(currentWeekSunday);
 
   input.addEventListener("change", () => {
     if (!input.value) return;
@@ -1129,6 +1149,7 @@ function initWeekPicker() {
     });
     updateDaySelect();
     updateWeekLabel();
+    updateWeekDateDisplay(sunday);
     saveState("השבוע עודכן");
     render();
   });
