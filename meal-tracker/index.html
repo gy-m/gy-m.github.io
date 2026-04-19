@@ -321,6 +321,26 @@ td.actioncell { min-width:76px; }
 
 <script>
 let FOODS = [];
+const FOODS_FALLBACK = [
+  {"name": "אנטריקוט",           "unit": "100 גרם",        "cal": 250, "protein": 26,  "carbs": 0,  "fat": 17},
+  {"name": "בקבוק בירה",          "unit": "330 מ״ל",         "cal": 150, "protein": 1.5, "carbs": 13, "fat": 0},
+  {"name": "גבינה צהובה",         "unit": "100 גרם",        "cal": 350, "protein": 25,  "carbs": 1,  "fat": 28},
+  {"name": "זיתים",               "unit": "10 יחידות",      "cal": 45,  "protein": 0.3, "carbs": 1.2,"fat": 4.2},
+  {"name": "חביתה 2 ביצים",       "unit": "מנה",             "cal": 180, "protein": 14,  "carbs": 1,  "fat": 14},
+  {"name": "חזה עוף",             "unit": "100 גרם",        "cal": 165, "protein": 31,  "carbs": 0,  "fat": 3.6},
+  {"name": "חמאת בוטנים",         "unit": "כף",             "cal": 95,  "protein": 4,   "carbs": 3,  "fat": 8},
+  {"name": "טחינה",               "unit": "כף",             "cal": 90,  "protein": 2.5, "carbs": 3,  "fat": 8},
+  {"name": "יוגורט דנונה 0% תות", "unit": "גביע",           "cal": 100, "protein": 10,  "carbs": 12, "fat": 0},
+  {"name": "ירקות",               "unit": "100 גרם",        "cal": 25,  "protein": 1,   "carbs": 5,  "fat": 0.2},
+  {"name": "מנת וויסקי",          "unit": "צ׳ייסר 44 מ״ל", "cal": 105, "protein": 0,   "carbs": 0,  "fat": 0},
+  {"name": "מנת שווארמה הודו",    "unit": "מנה",             "cal": 550, "protein": 38,  "carbs": 35, "fat": 28},
+  {"name": "סלמון",               "unit": "100 גרם",        "cal": 208, "protein": 22,  "carbs": 0,  "fat": 13},
+  {"name": "סלמי מעושן",          "unit": "100 גרם",        "cal": 407, "protein": 22,  "carbs": 2,  "fat": 35},
+  {"name": "פיתה כוסמין מיני",    "unit": "יחידה",           "cal": 120, "protein": 4,   "carbs": 22, "fat": 1.5},
+  {"name": "פסטרמה פרגית",        "unit": "100 גרם",        "cal": 140, "protein": 21,  "carbs": 2,  "fat": 5},
+  {"name": "שיבולת שועל",         "unit": "40 גרם",         "cal": 150, "protein": 5,   "carbs": 27, "fat": 3},
+  {"name": "תפוח אדמה קטן",       "unit": "יחידה",           "cal": 90,  "protein": 2,   "carbs": 20, "fat": 0.1}
+];
 const MEALS = ["א\"ב", "א\"צ", "א\"ע"];
 
 const WEEK_KEY = "meal-tracker-week-start";
@@ -828,10 +848,10 @@ document.getElementById("clearStorageBtn").addEventListener("click", () => {
   try {
     const res = await fetch("./foods.json");
     const data = await res.json();
-    if (Array.isArray(data)) FOODS = data;
+    FOODS = (Array.isArray(data) && data.length > 0) ? data : FOODS_FALLBACK;
   } catch(e) {
-    console.error("Failed to load foods.json:", e);
-    FOODS = [];
+    console.error("Failed to load foods.json, using fallback:", e);
+    FOODS = FOODS_FALLBACK;
   }
   state.forEach(applyFood);
   initQuickAdd();
