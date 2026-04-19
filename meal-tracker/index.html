@@ -685,10 +685,23 @@ function attachAutocomplete(inputEl, menuEl, onSelect) {
         onSelect(name);
         closeMenu();
       });
+      itemEl.addEventListener("touchend", ev => {
+        ev.preventDefault();
+        const name = itemEl.dataset.name;
+        onSelect(name);
+        closeMenu();
+      });
     });
   }
 
-  inputEl.addEventListener("focus", () => renderMenu(matches(inputEl.value)));
+  const isTouchDevice = () => ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
+  inputEl.addEventListener("focus", () => {
+    renderMenu(matches(inputEl.value));
+    if (isTouchDevice()) {
+      setTimeout(() => inputEl.blur(), 0);
+    }
+  });
   inputEl.addEventListener("input", () => {
     activeIndex = -1;
     renderMenu(matches(inputEl.value));
