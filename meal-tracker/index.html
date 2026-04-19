@@ -199,7 +199,7 @@ td.actioncell { min-width:76px; }
           <select id="quickDay"></select>
           <select id="quickMeal"></select>
           <input id="quickQty" type="number" min="0" step="0.25" value="1" placeholder="כמות">
-          <button id="quickAddBtn" class="small" style="background:#1e3a8a;color:#fff;">הוסף לשורה פנויה</button>
+          <button id="quickAddBtn" class="small" style="background:#1d4ed8;color:#fff;">הוסף לשורה פנויה</button>
         </div>
         <div>
           <div class="ac-wrap">
@@ -243,7 +243,7 @@ td.actioncell { min-width:76px; }
             </div>
           </div>
           <div style="margin-top:10px;">
-            <button id="manualAddBtn" class="small" style="background:#1e3a8a;color:#fff;">הוסף לשורה פנויה</button>
+            <button id="manualAddBtn" class="small" style="background:#065f46;color:#fff;">הוסף לשורה פנויה</button>
           </div>
         </div>
       </div>
@@ -280,8 +280,9 @@ td.actioncell { min-width:76px; }
               <input id="cfFat" type="number" min="0" step="0.1" placeholder="0">
             </div>
           </div>
-          <div style="margin-top:10px;">
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
             <button id="cfSaveBtn" class="small" style="background:#065f46;color:#fff;">שמור מזון מותאם</button>
+            <button id="cfDownloadBtn" class="small" style="background:#0369a1;color:#fff;">📥 הורד foods.json מעודכן</button>
           </div>
           <div class="custom-food-list" id="customFoodList"></div>
         </div>
@@ -948,6 +949,18 @@ function initCustomFoodSection() {
     renderCustomFoodList();
     statusEl.textContent = `המזון "${name}" נוסף בהצלחה`;
     setTimeout(() => statusEl.textContent = "", 2000);
+  });
+
+  document.getElementById("cfDownloadBtn").addEventListener("click", () => {
+    const allFoods = [...FOODS, ...customFoods].sort((a, b) => a.name.localeCompare(b.name, "he"));
+    const json = JSON.stringify(allFoods, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "foods.json";
+    a.click();
+    URL.revokeObjectURL(url);
   });
 
   renderCustomFoodList();
