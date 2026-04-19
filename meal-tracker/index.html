@@ -187,6 +187,36 @@ td.actioncell { min-width:76px; }
     <div class="status" id="status"></div>
 
     <div class="toolbar">
+      <div class="custom-food-section" id="goalsSection">
+        <div class="title" id="goalsSectionToggle">
+          <span>🎯 יעדים יומיים</span>
+          <span class="toggle-icon">+</span>
+        </div>
+        <div class="custom-food-body" id="goalsBody">
+          <div class="custom-food-grid" style="margin-top:6px;">
+            <div class="field">
+              <label for="goalCal">קלוריות (קל׳)</label>
+              <input id="goalCal" type="number" min="0" step="1" placeholder="למשל 2000">
+            </div>
+            <div class="field">
+              <label for="goalProtein">חלבון (גר׳)</label>
+              <input id="goalProtein" type="number" min="0" step="1" placeholder="למשל 150">
+            </div>
+            <div class="field">
+              <label for="goalCarbs">פחמימות (גר׳)</label>
+              <input id="goalCarbs" type="number" min="0" step="1" placeholder="למשל 200">
+            </div>
+            <div class="field">
+              <label for="goalFat">שומן (גר׳)</label>
+              <input id="goalFat" type="number" min="0" step="1" placeholder="למשל 70">
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <button id="goalsSaveBtn" class="small" style="background:#065f46;color:#fff;">שמור יעדים</button>
+          </div>
+        </div>
+      </div>
+
       <div class="custom-food-section week-picker" id="weekPickerSection">
         <div class="title">📅 בחר שבוע</div>
         <input type="date" id="weekDateInput" class="week-picker-input">
@@ -199,7 +229,7 @@ td.actioncell { min-width:76px; }
           <select id="quickDay"></select>
           <select id="quickMeal"></select>
           <input id="quickQty" type="number" min="0" step="0.25" value="1" placeholder="כמות">
-          <button id="quickAddBtn" class="small" style="background:#1d4ed8;color:#fff;">הוסף לשורה פנויה</button>
+          <button id="quickAddBtn" class="small" style="background:#065f46;color:#fff;">הוסף לשורה פנויה</button>
         </div>
         <div>
           <div class="ac-wrap">
@@ -381,6 +411,22 @@ let currentWeekSunday = getInitialWeekSunday();
 let DAYS = computeWeekDays(currentWeekSunday);
 const STORAGE_KEY = "meal-tracker-v3";
 const CUSTOM_FOODS_KEY = "meal-tracker-custom-foods";
+const GOALS_KEY = "meal-tracker-goals";
+
+function loadGoals() {
+  try {
+    const raw = localStorage.getItem(GOALS_KEY);
+    if (!raw) return { cal: "", protein: "", carbs: "", fat: "" };
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : { cal: "", protein: "", carbs: "", fat: "" };
+  } catch(e) { return { cal: "", protein: "", carbs: "", fat: "" }; }
+}
+
+let goals = loadGoals();
+
+function saveGoals() {
+  localStorage.setItem(GOALS_KEY, JSON.stringify(goals));
+}
 
 function loadCustomFoods() {
   try {
@@ -831,10 +877,11 @@ document.getElementById("exportBtn").addEventListener("click", () => {
 });
 
 document.getElementById("clearStorageBtn").addEventListener("click", () => {
-  if (!confirm("למחוק את כל הנתונים המקומיים השמורים?\n(נתוני ארוחות, מזונות מותאמים, הגדרות שבוע)")) return;
+  if (!confirm("למחוק את כל הנתונים המקומיים השמורים?\n(נתוני ארוחות, מזונות מותאמים, הגדרות שבוע, יעדים)")) return;
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(CUSTOM_FOODS_KEY);
   localStorage.removeItem(WEEK_KEY);
+  localStorage.removeItem(GOALS_KEY);
   location.reload();
 });
 
@@ -848,6 +895,7 @@ document.getElementById("clearStorageBtn").addEventListener("click", () => {
     FOODS = FOODS_FALLBACK;
   }
   state.forEach(applyFood);
+  initGoalsSection();
   initQuickAdd();
   initWeekPicker();
   initCustomFoodSection();
@@ -964,6 +1012,28 @@ function initCustomFoodSection() {
   });
 
   renderCustomFoodList();
+}
+
+function initGoalsSection() {
+  const section = document.getElementById("goalsSection");
+  const toggle = document.getElementById("goalsSectionToggle");
+  toggle.addEventListener("click", () => section.classList.toggle("open"));
+
+  // Populate saved values
+  if (goals.cal)     document.getElementById("goalCal").value     = goals.cal;
+  if (goals.protein) document.getElementById("goalProtein").value = goals.protein;
+  if (goals.carbs)   document.getElementById("goalCarbs").value   = goals.carbs;
+  if (goals.fat)     document.getElementById("goalFat").value     = goals.fat;
+
+  document.getElementById("goalsSaveBtn").addEventListener("click", () => {
+    goals.cal     = parseFloat(document.getElementById("goalCal").value)     || "";
+    goals.protein = parseFloat(document.getElementById("goalProtein").value) || "";
+    goals.carbs   = parseFloat(document.getElementById("goalCarbs").value)   || "";
+    goals.fat     = parseFloat(document.getElementById("goalFat").value)     || "";
+    saveGoals();
+    statusEl.textContent = "היעדים נשמרו";
+    setTimeout(() => statusEl.textContent = "", 1800);
+  });
 }
 
 function renderCustomFoodList() {
