@@ -680,6 +680,22 @@ function bindEvents() {
   });
 }
 
+function bindTapItem(el, onTap) {
+  let touchStartY = 0;
+  el.addEventListener("touchstart", e => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  el.addEventListener("touchend", e => {
+    if (Math.abs(e.changedTouches[0].clientY - touchStartY) > 8) return;
+    e.preventDefault();
+    onTap(e);
+  });
+  el.addEventListener("mousedown", e => {
+    e.preventDefault();
+    onTap(e);
+  });
+}
+
 function attachAutocomplete(inputEl, menuEl, onSelect) {
   let activeIndex = -1;
   let currentItems = [];
@@ -723,22 +739,8 @@ function attachAutocomplete(inputEl, menuEl, onSelect) {
     menuEl.style.display = "block";
 
     menuEl.querySelectorAll(".ac-item[data-name]").forEach(itemEl => {
-      let touchStartY = 0;
-      itemEl.addEventListener("touchstart", e => {
-        touchStartY = e.touches[0].clientY;
-      }, { passive: true });
-      itemEl.addEventListener("touchend", ev => {
-        const dy = Math.abs(ev.changedTouches[0].clientY - touchStartY);
-        if (dy > 8) return; // was a scroll, not a tap
-        ev.preventDefault();
-        const name = itemEl.dataset.name;
-        onSelect(name);
-        closeMenu();
-      });
-      itemEl.addEventListener("mousedown", ev => {
-        ev.preventDefault();
-        const name = itemEl.dataset.name;
-        onSelect(name);
+      bindTapItem(itemEl, () => {
+        onSelect(itemEl.dataset.name);
         closeMenu();
       });
     });
@@ -827,7 +829,7 @@ function initQuickAdd() {
   initFoodPicker();
 }
 
-let _selectedFoods = new Set();
+let foodPickerSelection = new Set();
 
 function initFoodPicker() {
   const searchEl = document.getElementById("foodPickerSearch");
@@ -844,8 +846,8 @@ function initFoodPicker() {
       return;
     }
     listEl.innerHTML = filtered.map(f => `
-      <div class="fp-item${_selectedFoods.has(f.name) ? ' selected' : ''}" data-name="${escapeHtml(f.name)}">
-        <div class="fp-check">${_selectedFoods.has(f.name) ? '✓' : ''}</div>
+      <div class="fp-item${foodPickerSelection.has(f.name) ? ' selected' : ''}" data-name="${escapeHtml(f.name)}">
+        <div class="fp-check">${foodPickerSelection.has(f.name) ? '✓' : ''}</div>
         <div class="fp-info">
           <div class="fp-name">${escapeHtml(f.name)}</div>
           <div class="fp-meta">${escapeHtml(f.unit)} · ${f.cal} קל׳</div>
@@ -853,26 +855,13 @@ function initFoodPicker() {
       </div>
     `).join("");
     listEl.querySelectorAll(".fp-item[data-name]").forEach(item => {
-      let touchStartY = 0;
-      item.addEventListener("touchstart", e => {
-        touchStartY = e.touches[0].clientY;
-      }, { passive: true });
-      item.addEventListener("touchend", e => {
-        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-        if (dy > 8) return;
-        e.preventDefault();
-        toggleFood(item.dataset.name);
-      });
-      item.addEventListener("mousedown", e => {
-        e.preventDefault();
-        toggleFood(item.dataset.name);
-      });
+      bindTapItem(item, () => toggleFood(item.dataset.name));
     });
   }
 
   function renderChips() {
-    if (!_selectedFoods.size) { chipsEl.innerHTML = ""; return; }
-    chipsEl.innerHTML = [..._selectedFoods].map(name => `
+    if (!foodPickerSelection.size) { chipsEl.innerHTML = ""; return; }
+    chipsEl.innerHTML = [...foodPickerSelection].map(name => `
       <div class="food-chip">
         <span>${escapeHtml(name)}</span>
         <button class="chip-x" data-name="${escapeHtml(name)}" type="button" aria-label="הסר">×</button>
@@ -880,7 +869,7 @@ function initFoodPicker() {
     `).join("");
     chipsEl.querySelectorAll(".chip-x").forEach(btn => {
       btn.addEventListener("click", () => {
-        _selectedFoods.delete(btn.dataset.name);
+        foodPickerSelection.delete(btn.dataset.name);
         renderList();
         renderChips();
       });
@@ -888,7 +877,7 @@ function initFoodPicker() {
   }
 
   function toggleFood(name) {
-    if (_selectedFoods.has(name)) { _selectedFoods.delete(name); } else { _selectedFoods.add(name); }
+    if (foodPickerSelection.has(name)) { foodPickerSelection.delete(name); } else { foodPickerSelection.add(name); }
     renderList();
     renderChips();
   }
@@ -904,14 +893,14 @@ function quickAdd() {
   const mealIndex = parseInt(document.getElementById("quickMeal").value, 10);
   const qty = parseFloat(document.getElementById("quickQty").value) || 1;
 
-  if (!_selectedFoods.size) {
+  if (!foodPickerSelection.size) {
     statusEl.textContent = "בחר לפחות מזון אחד מהרשימה";
     setTimeout(() => statusEl.textContent = "", 1800);
     return;
   }
 
   let added = 0;
-  _selectedFoods.forEach(foodName => {
+  foodPickerSelection.forEach(foodName => {
     const food = getFoodByName(foodName);
     if (!food) return;
     const newRow = {
@@ -925,7 +914,7 @@ function quickAdd() {
   });
 
   if (added > 0) {
-    _selectedFoods.clear();
+    foodPickerSelection.clear();
     const searchEl = document.getElementById("foodPickerSearch");
     if (searchEl) searchEl.value = "";
     if (window._foodPickerRefresh) window._foodPickerRefresh();
