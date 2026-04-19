@@ -912,7 +912,7 @@ function initFoodPicker() {
         <div class="fp-check">${foodPickerSelection.has(f.name) ? '✓' : ''}</div>
         <div class="fp-info">
           <div class="fp-name">${escapeHtml(f.name)}</div>
-          <div class="fp-meta">${escapeHtml(f.unit)} · ${f.cal} קל׳</div>
+          <div class="fp-meta">${escapeHtml(f.unit)} · ${f.cal} קל׳ | חלבון: ${f.protein}ג׳ | פחמימות: ${f.carbs}ג׳ | שומן: ${f.fat}ג׳</div>
         </div>
       </div>
     `).join("");
