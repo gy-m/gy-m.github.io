@@ -86,7 +86,11 @@ td.actioncell { min-width:76px; }
   .quickadd-row { grid-template-columns:repeat(4, minmax(120px,1fr)); }
   .custom-food-grid { grid-template-columns:repeat(6,1fr); }
 }
-.ac-wrap { position:relative; }
+.week-picker { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.week-picker .title { cursor:default; pointer-events:none; }
+.week-picker-input { width:auto; flex:0 0 auto; min-height:38px; padding:6px 10px; }
+.week-label { font-size:14px; color:var(--muted); font-weight:600; }
+
 .ac-input { padding-left:42px; }
 .ac-clear {
   position:absolute; left:6px; top:50%; transform:translateY(-50%);
@@ -181,6 +185,12 @@ td.actioncell { min-width:76px; }
     <div class="status" id="status"></div>
 
     <div class="toolbar">
+      <div class="custom-food-section week-picker" id="weekPickerSection">
+        <div class="title">📅 בחר שבוע</div>
+        <input type="date" id="weekDateInput" class="week-picker-input">
+        <span id="weekLabel" class="week-label"></span>
+      </div>
+
       <div class="quickadd">
         <div class="title">הוספה מהירה</div>
         <div class="quickadd-row">
@@ -197,11 +207,14 @@ td.actioncell { min-width:76px; }
           <div id="quickFoodMenu" class="ac-menu"></div>
           <div class="helper">בתוך הטבלה יש גם × וגם כפתור נקה לכל שורה.</div>
         </div>
+      </div>
 
-        <div style="margin-top:6px;">
-          <button type="button" id="toggleManualBtn" class="small" style="background:#f3f4f6;color:#374151;width:100%;" aria-expanded="false" aria-controls="manualAddSection">⚡ הוספה ידנית (ללא שמירה) <span id="toggleManualIcon" aria-hidden="true">▾</span></button>
+      <div class="custom-food-section" id="manualSection">
+        <div class="title" id="manualSectionToggle">
+          <span>⚡ הוספה ידנית (ללא שמירה)</span>
+          <span class="toggle-icon">+</span>
         </div>
-        <div id="manualAddSection" style="display:none; margin-top:10px; border-top:1px solid #e7edf5; padding-top:10px;" aria-hidden="true">
+        <div class="custom-food-body" id="manualAddSection">
           <div class="custom-food-grid">
             <div class="field">
               <label for="manualName">שם המזון *</label>
@@ -229,7 +242,7 @@ td.actioncell { min-width:76px; }
             </div>
           </div>
           <div style="margin-top:10px;">
-            <button id="manualAddBtn" class="small" style="background:#059669;color:#fff;">הוסף לשורה פנויה</button>
+            <button id="manualAddBtn" class="small" style="background:#065f46;color:#fff;">הוסף לשורה פנויה</button>
           </div>
         </div>
       </div>
@@ -306,8 +319,44 @@ td.actioncell { min-width:76px; }
 
 <script>
 const FOODS = [{"name": "חביתה 2 ביצים", "unit": "מנה", "cal": 180, "protein": 14, "carbs": 1, "fat": 14}, {"name": "פיתה כוסמין מיני", "unit": "יחידה", "cal": 120, "protein": 4, "carbs": 22, "fat": 1.5}, {"name": "יוגורט דנונה 0% תות", "unit": "גביע", "cal": 100, "protein": 10, "carbs": 12, "fat": 0}, {"name": "סלמון", "unit": "100 גרם", "cal": 208, "protein": 22, "carbs": 0, "fat": 13}, {"name": "אנטריקוט", "unit": "100 גרם", "cal": 250, "protein": 26, "carbs": 0, "fat": 17}, {"name": "ירקות", "unit": "100 גרם", "cal": 25, "protein": 1, "carbs": 5, "fat": 0.2}, {"name": "זיתים", "unit": "10 יחידות", "cal": 45, "protein": 0.3, "carbs": 1.2, "fat": 4.2}, {"name": "שיבולת שועל", "unit": "40 גרם", "cal": 150, "protein": 5, "carbs": 27, "fat": 3}, {"name": "חמאת בוטנים", "unit": "כף", "cal": 95, "protein": 4, "carbs": 3, "fat": 8}, {"name": "מנת שווארמה הודו", "unit": "מנה", "cal": 550, "protein": 38, "carbs": 35, "fat": 28}, {"name": "טחינה", "unit": "כף", "cal": 90, "protein": 2.5, "carbs": 3, "fat": 8}, {"name": "חזה עוף", "unit": "100 גרם", "cal": 165, "protein": 31, "carbs": 0, "fat": 3.6}, {"name": "בקבוק בירה", "unit": "330 מ״ל", "cal": 150, "protein": 1.5, "carbs": 13, "fat": 0}, {"name": "מנת וויסקי", "unit": "צ׳ייסר 44 מ״ל", "cal": 105, "protein": 0, "carbs": 0, "fat": 0}, {"name": "סלמי מעושן", "unit": "100 גרם", "cal": 407, "protein": 22, "carbs": 2, "fat": 35}, {"name": "פסטרמה פרגית", "unit": "100 גרם", "cal": 140, "protein": 21, "carbs": 2, "fat": 5}, {"name": "תפוח אדמה קטן", "unit": "יחידה", "cal": 90, "protein": 2, "carbs": 20, "fat": 0.1}];
-const DAYS = [["12.04", "א׳"], ["13.04", "ב׳"], ["14.04", "ג׳"], ["15.04", "ד׳"], ["16.04", "ה׳"], ["17.04", "ו׳"], ["18.04", "שבת"]];
 const MEALS = ["א\"ב", "א\"צ", "א\"ע"];
+
+const WEEK_KEY = "meal-tracker-week-start";
+const HEBREW_DAY_NAMES = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "שבת"];
+
+function computeWeekDays(sundayDate) {
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(sundayDate);
+    d.setDate(d.getDate() + i);
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    days.push([`${dd}.${mm}`, HEBREW_DAY_NAMES[i]]);
+  }
+  return days;
+}
+
+function getInitialWeekSunday() {
+  const saved = localStorage.getItem(WEEK_KEY);
+  if (saved) {
+    const d = new Date(saved + "T00:00:00");
+    if (!isNaN(d.getTime())) return d;
+  }
+  const now = new Date();
+  now.setDate(now.getDate() - now.getDay());
+  now.setHours(0, 0, 0, 0);
+  return now;
+}
+
+function formatDateISO(d) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+let currentWeekSunday = getInitialWeekSunday();
+let DAYS = computeWeekDays(currentWeekSunday);
 const STORAGE_KEY = "meal-tracker-v3";
 const CUSTOM_FOODS_KEY = "meal-tracker-custom-foods";
 
@@ -327,7 +376,7 @@ function saveCustomFoods() {
 }
 
 function getAllFoods() {
-  return [...FOODS, ...customFoods];
+  return [...FOODS, ...customFoods].sort((a, b) => a.name.localeCompare(b.name, "he"));
 }
 
 const tbody = document.getElementById("tbody");
@@ -345,6 +394,10 @@ function migrateRow(row) {
   }
   if (r.mealIndex == null || r.mealIndex < 0) {
     r.mealIndex = MEALS.indexOf(r.meal);
+  }
+  if (r.dayIndex >= 0 && r.dayIndex < DAYS.length) {
+    r.date = DAYS[r.dayIndex][0];
+    r.day = DAYS[r.dayIndex][1];
   }
   return r;
 }
@@ -638,9 +691,7 @@ function initAutocompleteInputs() {
 }
 
 function initQuickAdd() {
-  const daySel = document.getElementById("quickDay");
   const mealSel = document.getElementById("quickMeal");
-  daySel.innerHTML = DAYS.map((d, i) => `<option value="${i}">${d[0]} · ${d[1]}</option>`).join("");
   mealSel.innerHTML = MEALS.map((m, i) => `<option value="${i}">${m}</option>`).join("");
 
   const quickInput = document.getElementById("quickFoodInput");
@@ -717,15 +768,9 @@ function quickAddManual() {
 
 document.getElementById("manualAddBtn").addEventListener("click", quickAddManual);
 
-document.getElementById("toggleManualBtn").addEventListener("click", () => {
-  const section = document.getElementById("manualAddSection");
-  const icon = document.getElementById("toggleManualIcon");
-  const btn = document.getElementById("toggleManualBtn");
-  const open = section.style.display === "none";
-  section.style.display = open ? "block" : "none";
-  section.setAttribute("aria-hidden", open ? "false" : "true");
-  btn.setAttribute("aria-expanded", open ? "true" : "false");
-  icon.textContent = open ? "▴" : "▾";
+document.getElementById("manualSectionToggle").addEventListener("click", () => {
+  const section = document.getElementById("manualSection");
+  section.classList.toggle("open");
 });
 
 document.getElementById("importBtn").addEventListener("click", () => {
@@ -771,8 +816,53 @@ document.getElementById("exportBtn").addEventListener("click", () => {
 
 state.forEach(applyFood);
 initQuickAdd();
+initWeekPicker();
 initCustomFoodSection();
 render();
+
+function updateDaySelect() {
+  const daySel = document.getElementById("quickDay");
+  if (!daySel) return;
+  const prev = parseInt(daySel.value, 10);
+  daySel.innerHTML = DAYS.map((d, i) => `<option value="${i}">${d[0]} · ${d[1]}</option>`).join("");
+  daySel.value = (!isNaN(prev) && prev < DAYS.length) ? String(prev) : "0";
+}
+
+function updateWeekLabel() {
+  const lbl = document.getElementById("weekLabel");
+  if (!lbl) return;
+  lbl.textContent = `${DAYS[0][0]} – ${DAYS[6][0]}`;
+}
+
+function initWeekPicker() {
+  updateDaySelect();
+  updateWeekLabel();
+  const input = document.getElementById("weekDateInput");
+  if (!input) return;
+  input.value = formatDateISO(currentWeekSunday);
+
+  input.addEventListener("change", () => {
+    if (!input.value) return;
+    const picked = new Date(input.value + "T00:00:00");
+    if (isNaN(picked.getTime())) return;
+    const sunday = new Date(picked);
+    sunday.setDate(sunday.getDate() - sunday.getDay());
+    input.value = formatDateISO(sunday);
+    currentWeekSunday = sunday;
+    DAYS = computeWeekDays(sunday);
+    localStorage.setItem(WEEK_KEY, formatDateISO(sunday));
+    state.forEach(row => {
+      if (row.dayIndex >= 0 && row.dayIndex < DAYS.length) {
+        row.date = DAYS[row.dayIndex][0];
+        row.day = DAYS[row.dayIndex][1];
+      }
+    });
+    updateDaySelect();
+    updateWeekLabel();
+    saveState("השבוע עודכן");
+    render();
+  });
+}
 
 function initCustomFoodSection() {
   const section = document.getElementById("customFoodSection");
