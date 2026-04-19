@@ -92,6 +92,19 @@ td.actioncell { min-width:76px; }
 .week-picker-input { width:auto; flex:0 0 auto; min-height:38px; padding:6px 10px; }
 .week-label { font-size:14px; color:var(--muted); font-weight:600; }
 
+/* Day header rows (collapsible days) */
+.day-toggle-btn {
+  background:none; border:none; cursor:pointer; font-size:15px;
+  padding:0 6px 0 8px; min-height:auto; color:var(--accent);
+  vertical-align:middle; line-height:1;
+}
+tr.day-header-row { cursor:pointer; }
+tr.day-header-row td {
+  background:var(--head); font-weight:700; font-size:14px; padding:8px 10px;
+  border-top:2px solid var(--section-border); border-bottom:1px solid var(--section-border);
+}
+tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); }
+
 .ac-input { padding-left:42px; }
 .ac-clear {
   position:absolute; left:6px; top:50%; transform:translateY(-50%);
@@ -143,54 +156,65 @@ td.actioncell { min-width:76px; }
   color:#1e40af; padding:0 2px; min-height:auto; border-radius:999px;
 }
 
-/* ===== Mobile: card layout — no horizontal scroll ===== */
+/* ===== Mobile: compact single-line rows per day section ===== */
 @media (max-width:599px) {
   .table-wrap { overflow-x:hidden; padding:8px; }
   table { display:block; white-space:normal; min-width:unset; width:100%; }
   table thead { display:none; }
   table tbody { display:block; }
 
-  tbody tr:not(.summary) {
-    display:flex; flex-wrap:wrap; align-items:flex-end; gap:6px;
-    padding:10px; border:1px solid #e5e7eb; border-radius:14px;
-    margin-bottom:8px; background:#fff;
+  /* Day header row – full-width block separator */
+  tr.day-header-row { display:block; margin-top:10px; margin-bottom:4px; border-radius:10px; overflow:hidden; }
+  tr.day-header-row:first-child { margin-top:0; }
+  tr.day-header-row td { display:block; border-radius:10px; border-top:none; border-bottom:none; }
+
+  /* Data rows – single horizontal line per entry */
+  tbody tr:not(.summary):not(.day-header-row) {
+    display:flex; flex-wrap:nowrap; align-items:center; gap:4px;
+    padding:5px 7px; border:1px solid #e5e7eb; border-radius:8px;
+    margin-bottom:4px; background:#fff; overflow:hidden;
   }
-  tbody tr:not(.summary) td { border:none; padding:0; min-width:unset; }
+  tbody tr:not(.summary):not(.day-header-row) td { border:none; padding:0; min-width:unset; }
 
-  /* Date / day / meal badges */
-  td.daycell.datecell, td.daycell.daynamecell {
-    order:1; font-size:12px; background:var(--head); border-radius:6px;
-    padding:3px 7px; align-self:center;
+  /* Hide date/day cells – info is in the day header row */
+  td.daycell { display:none !important; }
+
+  /* Meal badge */
+  td.mealcell {
+    order:1; white-space:nowrap; font-size:11px;
+    background:#eef2ff; color:#1e3a8a; border-radius:5px;
+    padding:2px 5px; flex-shrink:0; align-self:center;
   }
-  td.mealcell { order:2; font-size:12px; background:#eef2ff; color:#1e3a8a; border-radius:6px; padding:3px 8px; align-self:center; }
-  td.daycell.datecell:empty, td.daycell.daynamecell:empty, td.mealcell:empty { display:none; }
+  td.mealcell:empty { display:none; }
 
-  /* Food input full width */
-  td.foodcell { order:10; flex:0 0 100%; min-width:unset; }
+  /* Food cell – takes available width */
+  td.foodcell { order:2; flex:1; min-width:60px; align-self:center; }
 
-  /* Metrics row with tiny labels */
-  td.unitcell    { order:20; display:flex; flex-direction:column; align-items:center; }
-  td.qtycell     { order:21; display:flex; flex-direction:column; align-items:center; }
-  td.calcell     { order:22; display:flex; flex-direction:column; align-items:center; }
-  td.proteincell { order:23; display:flex; flex-direction:column; align-items:center; }
-  td.carbscell   { order:24; display:flex; flex-direction:column; align-items:center; }
-  td.fatcell     { order:25; display:flex; flex-direction:column; align-items:center; }
-  td.actioncell  { order:26; min-width:unset; align-self:center; }
+  /* Hide unit (secondary info) */
+  td.unitcell { display:none !important; }
 
-  td.unitcell::before    { content:"יח׳";  font-size:10px; color:var(--muted); }
-  td.qtycell::before     { content:"כמות"; font-size:10px; color:var(--muted); }
-  td.calcell::before     { content:"קל׳";  font-size:10px; color:var(--muted); }
-  td.proteincell::before { content:"חלב׳"; font-size:10px; color:var(--muted); }
-  td.carbscell::before   { content:"פח׳";  font-size:10px; color:var(--muted); }
-  td.fatcell::before     { content:"שומ׳"; font-size:10px; color:var(--muted); }
+  /* Qty – compact */
+  td.qtycell { order:3; flex-shrink:0; align-self:center; }
 
-  input.qty    { max-width:54px; width:54px; }
-  input.metric { max-width:52px; width:52px; font-size:13px; min-height:36px; padding:4px 2px; }
+  /* Metric cells – compact column with tiny label above value */
+  td.calcell     { order:22; display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  td.proteincell { order:23; display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  td.carbscell   { order:24; display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  td.fatcell     { order:25; display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  td.actioncell  { order:26; flex-shrink:0; align-self:center; }
+
+  td.calcell::before     { content:"קל׳";  font-size:9px; color:var(--muted); }
+  td.proteincell::before { content:"חלב׳"; font-size:9px; color:var(--muted); }
+  td.carbscell::before   { content:"פח׳";  font-size:9px; color:var(--muted); }
+  td.fatcell::before     { content:"שומ׳"; font-size:9px; color:var(--muted); }
+
+  input.qty    { max-width:40px; width:40px; font-size:12px; min-height:32px; padding:4px 2px; }
+  input.metric { max-width:32px; width:32px; font-size:11px; min-height:28px; padding:2px; }
 
   /* Summary card */
   tr.summary {
     display:flex; flex-wrap:wrap; gap:6px; align-items:center;
-    padding:8px 10px; border:1px solid var(--section-border); border-radius:14px;
+    padding:8px 10px; border:1px solid var(--section-border); border-radius:10px;
     margin-bottom:8px; background:var(--sum);
   }
   tr.summary td { border:none; font-size:13px; padding:2px 4px; }
@@ -258,8 +282,12 @@ td.actioncell { min-width:76px; }
         <span id="weekLabel" class="week-label"></span>
       </div>
 
-      <div class="quickadd">
-        <div class="title">הוספה מהירה</div>
+      <div class="quickadd custom-food-section open" id="quickAddSection">
+        <div class="title" id="quickAddToggle">
+          <span>⚡ הוספה מהירה</span>
+          <span class="toggle-icon">+</span>
+        </div>
+        <div class="custom-food-body">
         <div class="quickadd-row">
           <select id="quickDay"></select>
           <select id="quickMeal"></select>
@@ -272,6 +300,7 @@ td.actioncell { min-width:76px; }
           <div class="food-picker-list" id="foodPickerList"></div>
           <div class="food-picker-chips" id="foodPickerChips"></div>
           <div class="helper">בתוך הטבלה יש כפתור נקה לכל שורה.</div>
+        </div>
         </div>
       </div>
 
@@ -533,6 +562,7 @@ function loadState() {
 }
 
 let state = loadState();
+let collapsedDays = new Set();
 
 function saveState(message = "נשמר אוטומטית") {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -610,21 +640,31 @@ function renderChart() {
 function render() {
   tbody.innerHTML = "";
   DAYS.forEach((day, dayIndex) => {
-    let dayFirstRow = true;
-    let dayHasRows = false;
+    const dayRowsExist = state.some(r => r.dayIndex === dayIndex);
+    if (!dayRowsExist) return;
+
+    // Collapsible day header
+    const isCollapsed = collapsedDays.has(dayIndex);
+    const dayHeaderRow = document.createElement("tr");
+    dayHeaderRow.className = "day-header-row" + (isCollapsed ? " collapsed" : "");
+    dayHeaderRow.innerHTML = `<td colspan="11">
+      <button class="day-toggle-btn" data-day="${dayIndex}" type="button" aria-label="${isCollapsed ? 'פתח יום' : 'צמצם יום'}">${isCollapsed ? "▶" : "▼"}</button>
+      <span>${day[0]}</span>&nbsp;<span style="color:var(--muted);font-size:13px;">${day[1]}</span>
+    </td>`;
+    tbody.appendChild(dayHeaderRow);
+
+    if (isCollapsed) return;
+
     MEALS.forEach((meal, mealIndex) => {
       const mealEntries = state
         .map((r, i) => [r, i])
         .filter(([r]) => r.dayIndex === dayIndex && r.mealIndex === mealIndex);
       mealEntries.forEach(([row, idx], localIndex) => {
-        dayHasRows = true;
         const isFirstOfMeal = localIndex === 0;
-        const isFirstOfDay = dayFirstRow;
-        if (isFirstOfDay) dayFirstRow = false;
         const rowEl = document.createElement("tr");
         rowEl.innerHTML = `
-          <td class="daycell datecell">${isFirstOfDay ? row.date : ""}</td>
-          <td class="daycell daynamecell">${isFirstOfDay ? row.day : ""}</td>
+          <td class="daycell datecell"></td>
+          <td class="daycell daynamecell"></td>
           <td class="mealcell">${isFirstOfMeal ? row.meal : ""}</td>
           <td class="foodcell">
             <div class="ac-wrap">
@@ -643,16 +683,15 @@ function render() {
         tbody.appendChild(rowEl);
       });
     });
-    if (dayHasRows) {
-      const totals = dayTotals(dayIndex);
-      const summary = document.createElement("tr");
-      summary.className = "summary";
-      summary.innerHTML = `
-        <td class="datecell">${day[0]}</td><td class="daynamecell">${day[1]}</td><td class="total-label">סה״כ</td><td class="foodcell"></td><td class="unitcell"></td><td class="qtycell"></td>
-        <td class="calcell">${totals.cal}</td><td class="proteincell">${totals.protein}</td><td class="carbscell">${totals.carbs}</td><td class="fatcell">${totals.fat}</td><td class="actioncell"></td>
-      `;
-      tbody.appendChild(summary);
-    }
+
+    const totals = dayTotals(dayIndex);
+    const summary = document.createElement("tr");
+    summary.className = "summary";
+    summary.innerHTML = `
+      <td class="datecell">${day[0]}</td><td class="daynamecell">${day[1]}</td><td class="total-label">סה״כ</td><td class="foodcell"></td><td class="unitcell"></td><td class="qtycell"></td>
+      <td class="calcell">${totals.cal}</td><td class="proteincell">${totals.protein}</td><td class="carbscell">${totals.carbs}</td><td class="fatcell">${totals.fat}</td><td class="actioncell"></td>
+    `;
+    tbody.appendChild(summary);
   });
   initAutocompleteInputs();
   bindEvents();
@@ -666,6 +705,19 @@ function bindEvents() {
       state[idx].qty = e.target.value;
       applyFood(state[idx]);
       saveState();
+      render();
+    });
+  });
+
+  document.querySelectorAll(".day-toggle-btn").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+      const dayIndex = parseInt(btn.dataset.day, 10);
+      if (collapsedDays.has(dayIndex)) {
+        collapsedDays.delete(dayIndex);
+      } else {
+        collapsedDays.add(dayIndex);
+      }
       render();
     });
   });
@@ -965,6 +1017,10 @@ document.getElementById("manualAddBtn").addEventListener("click", quickAddManual
 document.getElementById("manualSectionToggle").addEventListener("click", () => {
   const section = document.getElementById("manualSection");
   section.classList.toggle("open");
+});
+
+document.getElementById("quickAddToggle").addEventListener("click", () => {
+  document.getElementById("quickAddSection").classList.toggle("open");
 });
 
 document.getElementById("importBtn").addEventListener("click", () => {
