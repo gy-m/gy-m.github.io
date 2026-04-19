@@ -199,15 +199,14 @@ td.actioncell { min-width:76px; }
           <select id="quickDay"></select>
           <select id="quickMeal"></select>
           <input id="quickQty" type="number" min="0" step="0.25" value="1" placeholder="כמות">
-          <button id="quickAddBtn" class="small">הוסף לשורה פנויה</button>
+          <button id="quickAddBtn" class="small" style="background:#1e3a8a;color:#fff;">הוסף לשורה פנויה</button>
         </div>
         <div>
           <div class="ac-wrap">
             <input id="quickFoodInput" class="ac-input" type="text" placeholder="הקלד מזון, למשל: עוף, פיתה, וויסקי" autocomplete="off" />
-            <button id="quickFoodClear" class="ac-clear" type="button" aria-label="נקה">×</button>
           </div>
           <div id="quickFoodMenu" class="ac-menu"></div>
-          <div class="helper">בתוך הטבלה יש גם × וגם כפתור נקה לכל שורה.</div>
+          <div class="helper">בתוך הטבלה יש כפתור נקה לכל שורה.</div>
         </div>
       </div>
 
@@ -244,14 +243,14 @@ td.actioncell { min-width:76px; }
             </div>
           </div>
           <div style="margin-top:10px;">
-            <button id="manualAddBtn" class="small" style="background:#065f46;color:#fff;">הוסף לשורה פנויה</button>
+            <button id="manualAddBtn" class="small" style="background:#1e3a8a;color:#fff;">הוסף לשורה פנויה</button>
           </div>
         </div>
       </div>
 
       <div class="custom-food-section" id="customFoodSection">
         <div class="title" id="customFoodToggle">
-          <span>הוסף מזון מותאם אישית</span>
+          <span>הוספת מזון מותאם אישית (כולל שמירה)</span>
           <span class="toggle-icon">+</span>
         </div>
         <div class="custom-food-body">
@@ -718,15 +717,9 @@ function initQuickAdd() {
 
   const quickInput = document.getElementById("quickFoodInput");
   const quickMenu = document.getElementById("quickFoodMenu");
-  const clearBtn = document.getElementById("quickFoodClear");
 
   attachAutocomplete(quickInput, quickMenu, name => {
     quickInput.value = name;
-  });
-
-  clearBtn.addEventListener("click", () => {
-    quickInput.value = "";
-    quickInput.focus();
   });
 }
 
