@@ -108,6 +108,41 @@ td.actioncell { min-width:76px; }
 .chip { display:inline-block; background:var(--chip); color:#1e3a8a; padding:4px 8px; border-radius:999px; font-size:12px; }
 .helper { color:var(--muted); font-size:12px; }
 
+/* Food Picker Component */
+.food-picker-wrap { display:flex; flex-direction:column; gap:6px; }
+.food-picker-label { font-size:13px; font-weight:600; color:var(--muted); }
+.food-picker-list {
+  max-height:240px; overflow-y:auto; border:1px solid #cfd8e3; border-radius:12px;
+  background:#fff; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+}
+.fp-item {
+  display:flex; align-items:center; gap:10px; padding:10px 12px; min-height:48px;
+  border-bottom:1px solid #f0f4f8; cursor:pointer; user-select:none;
+  -webkit-tap-highlight-color:transparent; touch-action:pan-y;
+}
+.fp-item:last-child { border-bottom:none; }
+.fp-item.selected { background:#eef2ff; }
+.fp-check {
+  width:22px; height:22px; min-width:22px; border:2px solid #cfd8e3; border-radius:6px;
+  display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700;
+  background:#fff; color:transparent; flex-shrink:0;
+}
+.fp-item.selected .fp-check { background:#2563eb; border-color:#2563eb; color:#fff; }
+.fp-info { flex:1; min-width:0; }
+.fp-name { font-size:14px; font-weight:600; }
+.fp-meta { font-size:12px; color:var(--muted); }
+.fp-empty { padding:14px; color:var(--muted); font-size:14px; text-align:center; }
+.food-picker-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.food-chip {
+  display:inline-flex; align-items:center; gap:4px;
+  background:#dbeafe; color:#1e3a8a; border-radius:999px;
+  padding:5px 10px 5px 8px; font-size:13px;
+}
+.chip-x {
+  background:none; border:none; cursor:pointer; font-size:16px; line-height:1;
+  color:#1e40af; padding:0 2px; min-height:auto; border-radius:999px;
+}
+
 /* ===== Mobile: card layout — no horizontal scroll ===== */
 @media (max-width:599px) {
   .table-wrap { overflow-x:hidden; padding:8px; }
@@ -231,11 +266,11 @@ td.actioncell { min-width:76px; }
           <input id="quickQty" type="number" min="0" step="0.25" value="1" placeholder="כמות">
           <button id="quickAddBtn" class="small" style="background:#065f46;color:#fff;">הוסף לשורה פנויה</button>
         </div>
-        <div>
-          <div class="ac-wrap">
-            <input id="quickFoodInput" class="ac-input" type="text" placeholder="הקלד מזון, למשל: עוף, פיתה, וויסקי" autocomplete="off" />
-          </div>
-          <div id="quickFoodMenu" class="ac-menu"></div>
+        <div class="food-picker-wrap" id="foodPickerWrap">
+          <div class="food-picker-label">בחר מזון לתוספת (ניתן לבחור כמה):</div>
+          <input type="text" id="foodPickerSearch" autocomplete="off" placeholder="חפש מזון...">
+          <div class="food-picker-list" id="foodPickerList"></div>
+          <div class="food-picker-chips" id="foodPickerChips"></div>
           <div class="helper">בתוך הטבלה יש כפתור נקה לכל שורה.</div>
         </div>
       </div>
@@ -688,13 +723,19 @@ function attachAutocomplete(inputEl, menuEl, onSelect) {
     menuEl.style.display = "block";
 
     menuEl.querySelectorAll(".ac-item[data-name]").forEach(itemEl => {
-      itemEl.addEventListener("mousedown", ev => {
+      let touchStartY = 0;
+      itemEl.addEventListener("touchstart", e => {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+      itemEl.addEventListener("touchend", ev => {
+        const dy = Math.abs(ev.changedTouches[0].clientY - touchStartY);
+        if (dy > 8) return; // was a scroll, not a tap
         ev.preventDefault();
         const name = itemEl.dataset.name;
         onSelect(name);
         closeMenu();
       });
-      itemEl.addEventListener("touchend", ev => {
+      itemEl.addEventListener("mousedown", ev => {
         ev.preventDefault();
         const name = itemEl.dataset.name;
         onSelect(name);
@@ -783,34 +824,114 @@ function initAutocompleteInputs() {
 function initQuickAdd() {
   const mealSel = document.getElementById("quickMeal");
   mealSel.innerHTML = MEALS.map((m, i) => `<option value="${i}">${m}</option>`).join("");
+  initFoodPicker();
+}
 
-  const quickInput = document.getElementById("quickFoodInput");
-  const quickMenu = document.getElementById("quickFoodMenu");
+let _selectedFoods = new Set();
 
-  attachAutocomplete(quickInput, quickMenu, name => {
-    quickInput.value = name;
-  });
+function initFoodPicker() {
+  const searchEl = document.getElementById("foodPickerSearch");
+  const listEl = document.getElementById("foodPickerList");
+  const chipsEl = document.getElementById("foodPickerChips");
+  if (!searchEl || !listEl || !chipsEl) return;
+
+  function renderList() {
+    const q = (searchEl.value || "").trim().toLowerCase();
+    const all = getAllFoods();
+    const filtered = q ? all.filter(f => f.name.toLowerCase().includes(q)) : all;
+    if (!filtered.length) {
+      listEl.innerHTML = `<div class="fp-empty">לא נמצאו מזונות</div>`;
+      return;
+    }
+    listEl.innerHTML = filtered.map(f => `
+      <div class="fp-item${_selectedFoods.has(f.name) ? ' selected' : ''}" data-name="${escapeHtml(f.name)}">
+        <div class="fp-check">${_selectedFoods.has(f.name) ? '✓' : ''}</div>
+        <div class="fp-info">
+          <div class="fp-name">${escapeHtml(f.name)}</div>
+          <div class="fp-meta">${escapeHtml(f.unit)} · ${f.cal} קל׳</div>
+        </div>
+      </div>
+    `).join("");
+    listEl.querySelectorAll(".fp-item[data-name]").forEach(item => {
+      let touchStartY = 0;
+      item.addEventListener("touchstart", e => {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+      item.addEventListener("touchend", e => {
+        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+        if (dy > 8) return;
+        e.preventDefault();
+        toggleFood(item.dataset.name);
+      });
+      item.addEventListener("mousedown", e => {
+        e.preventDefault();
+        toggleFood(item.dataset.name);
+      });
+    });
+  }
+
+  function renderChips() {
+    if (!_selectedFoods.size) { chipsEl.innerHTML = ""; return; }
+    chipsEl.innerHTML = [..._selectedFoods].map(name => `
+      <div class="food-chip">
+        <span>${escapeHtml(name)}</span>
+        <button class="chip-x" data-name="${escapeHtml(name)}" type="button" aria-label="הסר">×</button>
+      </div>
+    `).join("");
+    chipsEl.querySelectorAll(".chip-x").forEach(btn => {
+      btn.addEventListener("click", () => {
+        _selectedFoods.delete(btn.dataset.name);
+        renderList();
+        renderChips();
+      });
+    });
+  }
+
+  function toggleFood(name) {
+    if (_selectedFoods.has(name)) { _selectedFoods.delete(name); } else { _selectedFoods.add(name); }
+    renderList();
+    renderChips();
+  }
+
+  searchEl.addEventListener("input", renderList);
+
+  window._foodPickerRefresh = () => { renderList(); renderChips(); };
+  renderList();
 }
 
 function quickAdd() {
   const dayIndex = parseInt(document.getElementById("quickDay").value, 10);
   const mealIndex = parseInt(document.getElementById("quickMeal").value, 10);
-  const foodText = document.getElementById("quickFoodInput").value.trim();
   const qty = parseFloat(document.getElementById("quickQty").value) || 1;
-  const food = getFoodByName(foodText);
-  if (!food) {
-    statusEl.textContent = "בחר מזון מהרשימה";
+
+  if (!_selectedFoods.size) {
+    statusEl.textContent = "בחר לפחות מזון אחד מהרשימה";
+    setTimeout(() => statusEl.textContent = "", 1800);
     return;
   }
-  const newRow = {
-    dayIndex, mealIndex,
-    date: DAYS[dayIndex][0], day: DAYS[dayIndex][1], meal: MEALS[mealIndex],
-    food: food.name, unit: food.unit, qty, cal: "", protein: "", carbs: "", fat: "", manual: false
-  };
-  applyFood(newRow);
-  state.push(newRow);
-  saveState("הפריט נוסף");
-  render();
+
+  let added = 0;
+  _selectedFoods.forEach(foodName => {
+    const food = getFoodByName(foodName);
+    if (!food) return;
+    const newRow = {
+      dayIndex, mealIndex,
+      date: DAYS[dayIndex][0], day: DAYS[dayIndex][1], meal: MEALS[mealIndex],
+      food: food.name, unit: food.unit, qty, cal: "", protein: "", carbs: "", fat: "", manual: false
+    };
+    applyFood(newRow);
+    state.push(newRow);
+    added++;
+  });
+
+  if (added > 0) {
+    _selectedFoods.clear();
+    const searchEl = document.getElementById("foodPickerSearch");
+    if (searchEl) searchEl.value = "";
+    if (window._foodPickerRefresh) window._foodPickerRefresh();
+    saveState(`${added} פריטים נוספו`);
+    render();
+  }
 }
 
 document.getElementById("quickAddBtn").addEventListener("click", quickAdd);
@@ -985,6 +1106,7 @@ function initCustomFoodSection() {
     customFoods.splice(i, 1);
     saveCustomFoods();
     renderCustomFoodList();
+    if (window._foodPickerRefresh) window._foodPickerRefresh();
   });
 
   saveBtn.addEventListener("click", () => {
@@ -1017,6 +1139,7 @@ function initCustomFoodSection() {
     document.getElementById("cfFat").value = "";
 
     renderCustomFoodList();
+    if (window._foodPickerRefresh) window._foodPickerRefresh();
     statusEl.textContent = `המזון "${name}" נוסף בהצלחה`;
     setTimeout(() => statusEl.textContent = "", 2000);
   });
