@@ -1,7 +1,8 @@
-const CACHE_NAME = 'meal-tracker-v1';
+const CACHE_NAME = 'meal-tracker-v2';
 const APP_FILES = [
   './',
   './index.html',
+  './foods.json',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png'

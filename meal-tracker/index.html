@@ -16,8 +16,9 @@
 
 <style>
 :root {
-  --bg:#f4f7fb; --card:#fff; --grid:#d7dee8; --head:#eaf1f8; --sum:#f7fafc;
-  --text:#1f2937; --muted:#667085; --accent:#2563eb; --good:#065f46; --chip:#eef2ff;
+  --bg:#ddeeff; --card:#fff; --grid:#b8ceea; --head:#c8dff5; --sum:#daeaf8;
+  --text:#1f2937; --muted:#4a6080; --accent:#2563eb; --good:#065f46; --chip:#cce0ff;
+  --section-bg:#e8f2ff; --section-border:#aac8e8;
 }
 * { box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family:Arial,"Noto Sans Hebrew","Segoe UI",sans-serif; }
@@ -37,12 +38,12 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 .status { padding:0 16px 10px; color:var(--good); font-size:13px; min-height:22px; }
 .toolbar { padding:0 16px 12px; display:grid; gap:12px; }
 .quickadd {
-  display:grid; grid-template-columns:1fr; gap:8px; background:#fbfdff; border:1px solid #e7edf5; border-radius:14px; padding:12px;
+  display:grid; grid-template-columns:1fr; gap:8px; background:var(--section-bg); border:1px solid var(--section-border); border-radius:14px; padding:12px;
 }
 .quickadd .title, .chart-title { font-size:14px; font-weight:700; }
 .quickadd-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .chart-wrap { padding:0 16px 14px; }
-.chart-card { background:#fbfdff; border:1px solid #e7edf5; border-radius:14px; padding:12px; }
+.chart-card { background:var(--section-bg); border:1px solid var(--section-border); border-radius:14px; padding:12px; }
 .chart-grid { display:flex; align-items:flex-end; gap:10px; min-height:150px; overflow-x:auto; padding-top:6px; }
 .bar-group { min-width:52px; text-align:center; }
 .bar { width:100%; border-radius:10px 10px 0 0; background:linear-gradient(180deg,#60a5fa,#2563eb); min-height:2px; }
@@ -52,7 +53,7 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 table { border-collapse:collapse; width:max-content; min-width:100%; background:#fff; table-layout:auto; white-space:nowrap; font-size:14px; }
 th, td { border:1px solid var(--grid); padding:8px 6px; text-align:center; vertical-align:middle; }
 th { position:sticky; top:0; z-index:5; background:var(--head); font-weight:700; }
-td.daycell, td.mealcell { background:#fbfdff; font-weight:700; }
+td.daycell, td.mealcell { background:var(--section-bg); font-weight:700; }
 tr.summary td { background:var(--sum); font-weight:700; }
 tr.summary td.total-label { color:var(--accent); }
 input, select {
@@ -64,7 +65,7 @@ input.metric { max-width:78px; text-align:center; background:#fcfdff; }
 td.foodcell { min-width:180px; text-align:right; position:relative; }
 td.unitcell { min-width:90px; }
 td.actioncell { min-width:76px; }
-.custom-food-section { background:#fbfdff; border:1px solid #e7edf5; border-radius:14px; padding:12px; }
+.custom-food-section { background:var(--section-bg); border:1px solid var(--section-border); border-radius:14px; padding:12px; }
 .custom-food-section .title { font-size:14px; font-weight:700; cursor:pointer; user-select:none; display:flex; justify-content:space-between; align-items:center; }
 .custom-food-section .toggle-icon { font-size:18px; color:var(--muted); transition:transform .2s; }
 .custom-food-section.open .toggle-icon { transform:rotate(45deg); }
@@ -74,7 +75,7 @@ td.actioncell { min-width:76px; }
 .custom-food-grid label { font-size:12px; color:var(--muted); }
 .custom-food-grid .field { display:flex; flex-direction:column; gap:3px; }
 .custom-food-list { margin-top:10px; }
-.custom-food-list-item { display:flex; justify-content:space-between; align-items:center; padding:7px 8px; border:1px solid #e7edf5; border-radius:8px; margin-bottom:5px; font-size:13px; background:#fff; }
+.custom-food-list-item { display:flex; justify-content:space-between; align-items:center; padding:7px 8px; border:1px solid var(--section-border); border-radius:8px; margin-bottom:5px; font-size:13px; background:#f0f7ff; }
 .custom-food-list-item .cf-name { font-weight:700; }
 .custom-food-list-item .cf-meta { color:var(--muted); font-size:12px; }
 .cf-del { background:#fee2e2; color:#991b1b; min-height:30px; padding:4px 10px; font-size:12px; }
@@ -86,7 +87,11 @@ td.actioncell { min-width:76px; }
   .quickadd-row { grid-template-columns:repeat(4, minmax(120px,1fr)); }
   .custom-food-grid { grid-template-columns:repeat(6,1fr); }
 }
-.ac-wrap { position:relative; }
+.week-picker { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.week-picker .title { cursor:default; pointer-events:none; }
+.week-picker-input { width:auto; flex:0 0 auto; min-height:38px; padding:6px 10px; }
+.week-label { font-size:14px; color:var(--muted); font-weight:600; }
+
 .ac-input { padding-left:42px; }
 .ac-clear {
   position:absolute; left:6px; top:50%; transform:translateY(-50%);
@@ -150,7 +155,7 @@ td.actioncell { min-width:76px; }
   /* Summary card */
   tr.summary {
     display:flex; flex-wrap:wrap; gap:6px; align-items:center;
-    padding:8px 10px; border:1px solid #c0c8d8; border-radius:14px;
+    padding:8px 10px; border:1px solid var(--section-border); border-radius:14px;
     margin-bottom:8px; background:var(--sum);
   }
   tr.summary td { border:none; font-size:13px; padding:2px 4px; }
@@ -173,7 +178,8 @@ td.actioncell { min-width:76px; }
       <div class="actions">
         <button id="importBtn" class="secondary">ייבוא JSON</button>
         <button id="exportBtn" class="secondary">ייצוא JSON</button>
-        <button id="resetBtn">איפוס כל הנתונים</button>
+        <button id="resetBtn">איפוס נתוני שבוע</button>
+        <button id="clearStorageBtn" class="secondary">🗑 נקה נתונים מקומיים</button>
       </div>
     </div>
       <input id="importFile" type="file" accept="application/json,.json" style="display:none">
@@ -181,27 +187,65 @@ td.actioncell { min-width:76px; }
     <div class="status" id="status"></div>
 
     <div class="toolbar">
+      <div class="custom-food-section" id="goalsSection">
+        <div class="title" id="goalsSectionToggle">
+          <span>🎯 יעדים יומיים</span>
+          <span class="toggle-icon">+</span>
+        </div>
+        <div class="custom-food-body" id="goalsBody">
+          <div class="custom-food-grid" style="margin-top:6px;">
+            <div class="field">
+              <label for="goalCal">קלוריות (קל׳)</label>
+              <input id="goalCal" type="number" min="0" step="1" placeholder="למשל 2000">
+            </div>
+            <div class="field">
+              <label for="goalProtein">חלבון (גר׳)</label>
+              <input id="goalProtein" type="number" min="0" step="1" placeholder="למשל 150">
+            </div>
+            <div class="field">
+              <label for="goalCarbs">פחמימות (גר׳)</label>
+              <input id="goalCarbs" type="number" min="0" step="1" placeholder="למשל 200">
+            </div>
+            <div class="field">
+              <label for="goalFat">שומן (גר׳)</label>
+              <input id="goalFat" type="number" min="0" step="1" placeholder="למשל 70">
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <button id="goalsSaveBtn" class="small" style="background:#065f46;color:#fff;">שמור יעדים</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="custom-food-section week-picker" id="weekPickerSection">
+        <div class="title">📅 בחר שבוע</div>
+        <input type="date" id="weekDateInput" class="week-picker-input">
+        <span id="weekLabel" class="week-label"></span>
+      </div>
+
       <div class="quickadd">
         <div class="title">הוספה מהירה</div>
         <div class="quickadd-row">
           <select id="quickDay"></select>
           <select id="quickMeal"></select>
           <input id="quickQty" type="number" min="0" step="0.25" value="1" placeholder="כמות">
-          <button id="quickAddBtn" class="small">הוסף לשורה פנויה</button>
+          <button id="quickAddBtn" class="small" style="background:#065f46;color:#fff;">הוסף לשורה פנויה</button>
         </div>
         <div>
           <div class="ac-wrap">
             <input id="quickFoodInput" class="ac-input" type="text" placeholder="הקלד מזון, למשל: עוף, פיתה, וויסקי" autocomplete="off" />
-            <button id="quickFoodClear" class="ac-clear" type="button" aria-label="נקה">×</button>
           </div>
           <div id="quickFoodMenu" class="ac-menu"></div>
-          <div class="helper">בתוך הטבלה יש גם × וגם כפתור נקה לכל שורה.</div>
+          <div class="helper">בתוך הטבלה יש כפתור נקה לכל שורה.</div>
         </div>
+      </div>
 
-        <div style="margin-top:6px;">
-          <button type="button" id="toggleManualBtn" class="small" style="background:#f3f4f6;color:#374151;width:100%;" aria-expanded="false" aria-controls="manualAddSection">⚡ הוספה ידנית (ללא שמירה) <span id="toggleManualIcon" aria-hidden="true">▾</span></button>
+      <div class="custom-food-section" id="manualSection">
+        <div class="title" id="manualSectionToggle">
+          <span>⚡ הוספה ידנית (ללא שמירה)</span>
+          <span class="toggle-icon">+</span>
         </div>
-        <div id="manualAddSection" style="display:none; margin-top:10px; border-top:1px solid #e7edf5; padding-top:10px;" aria-hidden="true">
+        <div class="custom-food-body" id="manualAddSection">
           <div class="custom-food-grid">
             <div class="field">
               <label for="manualName">שם המזון *</label>
@@ -229,14 +273,14 @@ td.actioncell { min-width:76px; }
             </div>
           </div>
           <div style="margin-top:10px;">
-            <button id="manualAddBtn" class="small" style="background:#059669;color:#fff;">הוסף לשורה פנויה</button>
+            <button id="manualAddBtn" class="small" style="background:#065f46;color:#fff;">הוסף לשורה פנויה</button>
           </div>
         </div>
       </div>
 
       <div class="custom-food-section" id="customFoodSection">
         <div class="title" id="customFoodToggle">
-          <span>הוסף מזון מותאם אישית</span>
+          <span>הוספת מזון מותאם אישית (כולל שמירה)</span>
           <span class="toggle-icon">+</span>
         </div>
         <div class="custom-food-body">
@@ -266,8 +310,9 @@ td.actioncell { min-width:76px; }
               <input id="cfFat" type="number" min="0" step="0.1" placeholder="0">
             </div>
           </div>
-          <div style="margin-top:10px;">
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
             <button id="cfSaveBtn" class="small" style="background:#065f46;color:#fff;">שמור מזון מותאם</button>
+            <button id="cfDownloadBtn" class="small" style="background:#0369a1;color:#fff;">📥 הורד foods.json מעודכן</button>
           </div>
           <div class="custom-food-list" id="customFoodList"></div>
         </div>
@@ -305,11 +350,83 @@ td.actioncell { min-width:76px; }
 </div>
 
 <script>
-const FOODS = [{"name": "חביתה 2 ביצים", "unit": "מנה", "cal": 180, "protein": 14, "carbs": 1, "fat": 14}, {"name": "פיתה כוסמין מיני", "unit": "יחידה", "cal": 120, "protein": 4, "carbs": 22, "fat": 1.5}, {"name": "יוגורט דנונה 0% תות", "unit": "גביע", "cal": 100, "protein": 10, "carbs": 12, "fat": 0}, {"name": "סלמון", "unit": "100 גרם", "cal": 208, "protein": 22, "carbs": 0, "fat": 13}, {"name": "אנטריקוט", "unit": "100 גרם", "cal": 250, "protein": 26, "carbs": 0, "fat": 17}, {"name": "ירקות", "unit": "100 גרם", "cal": 25, "protein": 1, "carbs": 5, "fat": 0.2}, {"name": "זיתים", "unit": "10 יחידות", "cal": 45, "protein": 0.3, "carbs": 1.2, "fat": 4.2}, {"name": "שיבולת שועל", "unit": "40 גרם", "cal": 150, "protein": 5, "carbs": 27, "fat": 3}, {"name": "חמאת בוטנים", "unit": "כף", "cal": 95, "protein": 4, "carbs": 3, "fat": 8}, {"name": "מנת שווארמה הודו", "unit": "מנה", "cal": 550, "protein": 38, "carbs": 35, "fat": 28}, {"name": "טחינה", "unit": "כף", "cal": 90, "protein": 2.5, "carbs": 3, "fat": 8}, {"name": "חזה עוף", "unit": "100 גרם", "cal": 165, "protein": 31, "carbs": 0, "fat": 3.6}, {"name": "בקבוק בירה", "unit": "330 מ״ל", "cal": 150, "protein": 1.5, "carbs": 13, "fat": 0}, {"name": "מנת וויסקי", "unit": "צ׳ייסר 44 מ״ל", "cal": 105, "protein": 0, "carbs": 0, "fat": 0}, {"name": "סלמי מעושן", "unit": "100 גרם", "cal": 407, "protein": 22, "carbs": 2, "fat": 35}, {"name": "פסטרמה פרגית", "unit": "100 גרם", "cal": 140, "protein": 21, "carbs": 2, "fat": 5}, {"name": "תפוח אדמה קטן", "unit": "יחידה", "cal": 90, "protein": 2, "carbs": 20, "fat": 0.1}];
-const DAYS = [["12.04", "א׳"], ["13.04", "ב׳"], ["14.04", "ג׳"], ["15.04", "ד׳"], ["16.04", "ה׳"], ["17.04", "ו׳"], ["18.04", "שבת"]];
+let FOODS = [];
+const FOODS_FALLBACK = [
+  {"name": "אנטריקוט",           "unit": "100 גרם",        "cal": 250, "protein": 26,  "carbs": 0,  "fat": 17},
+  {"name": "בקבוק בירה",          "unit": "330 מ״ל",         "cal": 150, "protein": 1.5, "carbs": 13, "fat": 0},
+  {"name": "גבינה צהובה",         "unit": "100 גרם",        "cal": 350, "protein": 25,  "carbs": 1,  "fat": 28},
+  {"name": "זיתים",               "unit": "10 יחידות",      "cal": 45,  "protein": 0.3, "carbs": 1.2,"fat": 4.2},
+  {"name": "חביתה 2 ביצים",       "unit": "מנה",             "cal": 180, "protein": 14,  "carbs": 1,  "fat": 14},
+  {"name": "חזה עוף",             "unit": "100 גרם",        "cal": 165, "protein": 31,  "carbs": 0,  "fat": 3.6},
+  {"name": "חמאת בוטנים",         "unit": "כף",             "cal": 95,  "protein": 4,   "carbs": 3,  "fat": 8},
+  {"name": "טחינה",               "unit": "כף",             "cal": 90,  "protein": 2.5, "carbs": 3,  "fat": 8},
+  {"name": "יוגורט דנונה 0% תות", "unit": "גביע",           "cal": 100, "protein": 10,  "carbs": 12, "fat": 0},
+  {"name": "ירקות",               "unit": "100 גרם",        "cal": 25,  "protein": 1,   "carbs": 5,  "fat": 0.2},
+  {"name": "מנת וויסקי",          "unit": "צ׳ייסר 44 מ״ל", "cal": 105, "protein": 0,   "carbs": 0,  "fat": 0},
+  {"name": "מנת שווארמה הודו",    "unit": "מנה",             "cal": 550, "protein": 38,  "carbs": 35, "fat": 28},
+  {"name": "סלמון",               "unit": "100 גרם",        "cal": 208, "protein": 22,  "carbs": 0,  "fat": 13},
+  {"name": "סלמי מעושן",          "unit": "100 גרם",        "cal": 407, "protein": 22,  "carbs": 2,  "fat": 35},
+  {"name": "פיתה כוסמין מיני",    "unit": "יחידה",           "cal": 120, "protein": 4,   "carbs": 22, "fat": 1.5},
+  {"name": "פסטרמה פרגית",        "unit": "100 גרם",        "cal": 140, "protein": 21,  "carbs": 2,  "fat": 5},
+  {"name": "שיבולת שועל",         "unit": "40 גרם",         "cal": 150, "protein": 5,   "carbs": 27, "fat": 3},
+  {"name": "תפוח אדמה קטן",       "unit": "יחידה",           "cal": 90,  "protein": 2,   "carbs": 20, "fat": 0.1}
+];
 const MEALS = ["א\"ב", "א\"צ", "א\"ע"];
+
+const WEEK_KEY = "meal-tracker-week-start";
+const HEBREW_DAY_NAMES = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "שבת"];
+
+function computeWeekDays(sundayDate) {
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(sundayDate);
+    d.setDate(d.getDate() + i);
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    days.push([`${dd}.${mm}`, HEBREW_DAY_NAMES[i]]);
+  }
+  return days;
+}
+
+function getInitialWeekSunday() {
+  const saved = localStorage.getItem(WEEK_KEY);
+  if (saved) {
+    const d = new Date(saved + "T00:00:00");
+    if (!isNaN(d.getTime())) return d;
+  }
+  const now = new Date();
+  now.setDate(now.getDate() - now.getDay());
+  now.setHours(0, 0, 0, 0);
+  return now;
+}
+
+function formatDateISO(d) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+let currentWeekSunday = getInitialWeekSunday();
+let DAYS = computeWeekDays(currentWeekSunday);
 const STORAGE_KEY = "meal-tracker-v3";
 const CUSTOM_FOODS_KEY = "meal-tracker-custom-foods";
+const GOALS_KEY = "meal-tracker-goals";
+
+function loadGoals() {
+  try {
+    const raw = localStorage.getItem(GOALS_KEY);
+    if (!raw) return { cal: "", protein: "", carbs: "", fat: "" };
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : { cal: "", protein: "", carbs: "", fat: "" };
+  } catch(e) { return { cal: "", protein: "", carbs: "", fat: "" }; }
+}
+
+let goals = loadGoals();
+
+function saveGoals() {
+  localStorage.setItem(GOALS_KEY, JSON.stringify(goals));
+}
 
 function loadCustomFoods() {
   try {
@@ -327,7 +444,7 @@ function saveCustomFoods() {
 }
 
 function getAllFoods() {
-  return [...FOODS, ...customFoods];
+  return [...FOODS, ...customFoods].sort((a, b) => a.name.localeCompare(b.name, "he"));
 }
 
 const tbody = document.getElementById("tbody");
@@ -345,6 +462,10 @@ function migrateRow(row) {
   }
   if (r.mealIndex == null || r.mealIndex < 0) {
     r.mealIndex = MEALS.indexOf(r.meal);
+  }
+  if (r.dayIndex >= 0 && r.dayIndex < DAYS.length) {
+    r.date = DAYS[r.dayIndex][0];
+    r.day = DAYS[r.dayIndex][1];
   }
   return r;
 }
@@ -638,22 +759,14 @@ function initAutocompleteInputs() {
 }
 
 function initQuickAdd() {
-  const daySel = document.getElementById("quickDay");
   const mealSel = document.getElementById("quickMeal");
-  daySel.innerHTML = DAYS.map((d, i) => `<option value="${i}">${d[0]} · ${d[1]}</option>`).join("");
   mealSel.innerHTML = MEALS.map((m, i) => `<option value="${i}">${m}</option>`).join("");
 
   const quickInput = document.getElementById("quickFoodInput");
   const quickMenu = document.getElementById("quickFoodMenu");
-  const clearBtn = document.getElementById("quickFoodClear");
 
   attachAutocomplete(quickInput, quickMenu, name => {
     quickInput.value = name;
-  });
-
-  clearBtn.addEventListener("click", () => {
-    quickInput.value = "";
-    quickInput.focus();
   });
 }
 
@@ -717,15 +830,9 @@ function quickAddManual() {
 
 document.getElementById("manualAddBtn").addEventListener("click", quickAddManual);
 
-document.getElementById("toggleManualBtn").addEventListener("click", () => {
-  const section = document.getElementById("manualAddSection");
-  const icon = document.getElementById("toggleManualIcon");
-  const btn = document.getElementById("toggleManualBtn");
-  const open = section.style.display === "none";
-  section.style.display = open ? "block" : "none";
-  section.setAttribute("aria-hidden", open ? "false" : "true");
-  btn.setAttribute("aria-expanded", open ? "true" : "false");
-  icon.textContent = open ? "▴" : "▾";
+document.getElementById("manualSectionToggle").addEventListener("click", () => {
+  const section = document.getElementById("manualSection");
+  section.classList.toggle("open");
 });
 
 document.getElementById("importBtn").addEventListener("click", () => {
@@ -769,10 +876,75 @@ document.getElementById("exportBtn").addEventListener("click", () => {
   setTimeout(() => statusEl.textContent = "", 1500);
 });
 
-state.forEach(applyFood);
-initQuickAdd();
-initCustomFoodSection();
-render();
+document.getElementById("clearStorageBtn").addEventListener("click", () => {
+  if (!confirm("למחוק את כל הנתונים המקומיים השמורים?\n(נתוני ארוחות, מזונות מותאמים, הגדרות שבוע, יעדים)")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(CUSTOM_FOODS_KEY);
+  localStorage.removeItem(WEEK_KEY);
+  localStorage.removeItem(GOALS_KEY);
+  location.reload();
+});
+
+(async () => {
+  try {
+    const res = await fetch("./foods.json");
+    const data = await res.json();
+    FOODS = (Array.isArray(data) && data.length > 0) ? data : FOODS_FALLBACK;
+  } catch(e) {
+    console.error("Failed to load foods.json, using fallback:", e);
+    FOODS = FOODS_FALLBACK;
+  }
+  state.forEach(applyFood);
+  initGoalsSection();
+  initQuickAdd();
+  initWeekPicker();
+  initCustomFoodSection();
+  render();
+})();
+
+function updateDaySelect() {
+  const daySel = document.getElementById("quickDay");
+  if (!daySel) return;
+  const prev = parseInt(daySel.value, 10);
+  daySel.innerHTML = DAYS.map((d, i) => `<option value="${i}">${d[0]} · ${d[1]}</option>`).join("");
+  daySel.value = (!isNaN(prev) && prev < DAYS.length) ? String(prev) : "0";
+}
+
+function updateWeekLabel() {
+  const lbl = document.getElementById("weekLabel");
+  if (!lbl) return;
+  lbl.textContent = `${DAYS[0][0]} – ${DAYS[6][0]}`;
+}
+
+function initWeekPicker() {
+  updateDaySelect();
+  updateWeekLabel();
+  const input = document.getElementById("weekDateInput");
+  if (!input) return;
+  input.value = formatDateISO(currentWeekSunday);
+
+  input.addEventListener("change", () => {
+    if (!input.value) return;
+    const picked = new Date(input.value + "T00:00:00");
+    if (isNaN(picked.getTime())) return;
+    const sunday = new Date(picked);
+    sunday.setDate(sunday.getDate() - sunday.getDay());
+    input.value = formatDateISO(sunday);
+    currentWeekSunday = sunday;
+    DAYS = computeWeekDays(sunday);
+    localStorage.setItem(WEEK_KEY, formatDateISO(sunday));
+    state.forEach(row => {
+      if (row.dayIndex >= 0 && row.dayIndex < DAYS.length) {
+        row.date = DAYS[row.dayIndex][0];
+        row.day = DAYS[row.dayIndex][1];
+      }
+    });
+    updateDaySelect();
+    updateWeekLabel();
+    saveState("השבוע עודכן");
+    render();
+  });
+}
 
 function initCustomFoodSection() {
   const section = document.getElementById("customFoodSection");
@@ -827,7 +999,41 @@ function initCustomFoodSection() {
     setTimeout(() => statusEl.textContent = "", 2000);
   });
 
+  document.getElementById("cfDownloadBtn").addEventListener("click", () => {
+    const allFoods = [...FOODS, ...customFoods].sort((a, b) => a.name.localeCompare(b.name, "he"));
+    const json = JSON.stringify(allFoods, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "foods.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
   renderCustomFoodList();
+}
+
+function initGoalsSection() {
+  const section = document.getElementById("goalsSection");
+  const toggle = document.getElementById("goalsSectionToggle");
+  toggle.addEventListener("click", () => section.classList.toggle("open"));
+
+  // Populate saved values
+  if (goals.cal)     document.getElementById("goalCal").value     = goals.cal;
+  if (goals.protein) document.getElementById("goalProtein").value = goals.protein;
+  if (goals.carbs)   document.getElementById("goalCarbs").value   = goals.carbs;
+  if (goals.fat)     document.getElementById("goalFat").value     = goals.fat;
+
+  document.getElementById("goalsSaveBtn").addEventListener("click", () => {
+    goals.cal     = parseFloat(document.getElementById("goalCal").value)     || "";
+    goals.protein = parseFloat(document.getElementById("goalProtein").value) || "";
+    goals.carbs   = parseFloat(document.getElementById("goalCarbs").value)   || "";
+    goals.fat     = parseFloat(document.getElementById("goalFat").value)     || "";
+    saveGoals();
+    statusEl.textContent = "היעדים נשמרו";
+    setTimeout(() => statusEl.textContent = "", 1800);
+  });
 }
 
 function renderCustomFoodList() {
