@@ -45,6 +45,10 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 .chart-wrap { padding:0 16px 14px; }
 .chart-card { background:var(--section-bg); border:1px solid var(--section-border); border-radius:14px; padding:12px; }
 .chart-grid { display:flex; align-items:flex-end; gap:10px; min-height:150px; overflow-x:auto; padding-top:6px; }
+.bar-cal     { background:linear-gradient(180deg,#60a5fa,#2563eb); }
+.bar-protein { background:linear-gradient(180deg,#6ee7b7,#059669); }
+.bar-carbs   { background:linear-gradient(180deg,#fcd34d,#d97706); }
+.bar-fat     { background:linear-gradient(180deg,#fca5a5,#dc2626); }
 .bar-group { min-width:62px; text-align:center; }
 .bar { width:100%; border-radius:10px 10px 0 0; background:linear-gradient(180deg,#60a5fa,#2563eb); min-height:2px; }
 .bar-value { font-size:12px; color:var(--muted); margin-bottom:6px; }
@@ -402,10 +406,10 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
       <div class="chart-card">
         <div class="chart-title">📊 קלוריות ומאקרו ליום</div>
         <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#2563eb;vertical-align:middle;margin-left:3px;"></span>קלוריות</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#059669;vertical-align:middle;margin-left:3px;"></span>חלבון</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#d97706;vertical-align:middle;margin-left:3px;"></span>פחמימות</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#dc2626;vertical-align:middle;margin-left:3px;"></span>שומן</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-cal"></span>קלוריות</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-protein"></span>חלבון</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-carbs"></span>פחמימות</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-fat"></span>שומן</span>
         </div>
         <div class="chart-grid" id="chartGrid"></div>
       </div>
@@ -647,6 +651,10 @@ function dayTotals(dayIndex) {
   return { cal: sum("cal"), protein: sum("protein"), carbs: sum("carbs"), fat: sum("fat") };
 }
 
+function calcBarHeight(value, max) {
+  return Math.max(2, ((value || 0) / max) * 110);
+}
+
 function renderChart() {
   chartGrid.innerHTML = "";
   const totals = DAYS.map((d, i) => ({ label: d[1], ...dayTotals(i) }));
@@ -655,19 +663,19 @@ function renderChart() {
   const maxCarbs   = Math.max(...totals.map(t => t.carbs   || 0), 1);
   const maxFat     = Math.max(...totals.map(t => t.fat     || 0), 1);
   totals.forEach(t => {
-    const hCal   = Math.max(2, ((t.cal     || 0) / maxCal)     * 110);
-    const hProt  = Math.max(2, ((t.protein || 0) / maxProtein) * 110);
-    const hCarbs = Math.max(2, ((t.carbs   || 0) / maxCarbs)   * 110);
-    const hFat   = Math.max(2, ((t.fat     || 0) / maxFat)     * 110);
+    const hCal   = calcBarHeight(t.cal,     maxCal);
+    const hProt  = calcBarHeight(t.protein, maxProtein);
+    const hCarbs = calcBarHeight(t.carbs,   maxCarbs);
+    const hFat   = calcBarHeight(t.fat,     maxFat);
     const el = document.createElement("div");
     el.className = "bar-group";
     el.innerHTML = `
       <div class="bar-value">${t.cal || 0}</div>
       <div style="display:flex;align-items:flex-end;gap:2px;justify-content:center;">
-        <div class="bar" style="height:${hCal}px;width:18px;background:linear-gradient(180deg,#60a5fa,#2563eb)" title="קלוריות: ${t.cal || 0}"></div>
-        <div class="bar" style="height:${hProt}px;width:10px;background:linear-gradient(180deg,#6ee7b7,#059669)" title="חלבון: ${t.protein || 0}ג׳"></div>
-        <div class="bar" style="height:${hCarbs}px;width:10px;background:linear-gradient(180deg,#fcd34d,#d97706)" title="פחמימות: ${t.carbs || 0}ג׳"></div>
-        <div class="bar" style="height:${hFat}px;width:10px;background:linear-gradient(180deg,#fca5a5,#dc2626)" title="שומן: ${t.fat || 0}ג׳"></div>
+        <div class="bar bar-cal"     style="height:${hCal}px;width:18px;" title="קלוריות: ${t.cal || 0}"></div>
+        <div class="bar bar-protein" style="height:${hProt}px;width:10px;" title="חלבון: ${t.protein || 0}ג׳"></div>
+        <div class="bar bar-carbs"   style="height:${hCarbs}px;width:10px;" title="פחמימות: ${t.carbs || 0}ג׳"></div>
+        <div class="bar bar-fat"     style="height:${hFat}px;width:10px;" title="שומן: ${t.fat || 0}ג׳"></div>
       </div>
       <div class="bar-label">${t.label}</div>
       <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:2px;">ח:${t.protein||0}&nbsp;פ:${t.carbs||0}&nbsp;ש:${t.fat||0}</div>
