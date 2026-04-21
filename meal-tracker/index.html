@@ -658,15 +658,13 @@ function calcBarHeight(value, max) {
 function renderChart() {
   chartGrid.innerHTML = "";
   const totals = DAYS.map((d, i) => ({ label: d[1], ...dayTotals(i) }));
-  const maxCal     = Math.max(...totals.map(t => t.cal     || 0), 100);
-  const maxProtein = Math.max(...totals.map(t => t.protein || 0), 1);
-  const maxCarbs   = Math.max(...totals.map(t => t.carbs   || 0), 1);
-  const maxFat     = Math.max(...totals.map(t => t.fat     || 0), 1);
+  const maxCal   = Math.max(...totals.map(t => t.cal     || 0), 100);
+  const maxMacro = Math.max(...totals.map(t => Math.max(t.protein || 0, t.carbs || 0, t.fat || 0)), 1);
   totals.forEach(t => {
     const hCal   = calcBarHeight(t.cal,     maxCal);
-    const hProt  = calcBarHeight(t.protein, maxProtein);
-    const hCarbs = calcBarHeight(t.carbs,   maxCarbs);
-    const hFat   = calcBarHeight(t.fat,     maxFat);
+    const hProt  = calcBarHeight(t.protein, maxMacro);
+    const hCarbs = calcBarHeight(t.carbs,   maxMacro);
+    const hFat   = calcBarHeight(t.fat,     maxMacro);
     const el = document.createElement("div");
     el.className = "bar-group";
     el.innerHTML = `
