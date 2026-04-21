@@ -259,7 +259,8 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
         <button id="importBtn" class="secondary">ייבוא JSON</button>
         <button id="exportBtn" class="secondary">ייצוא JSON</button>
         <button id="resetBtn">איפוס נתוני שבוע</button>
-        <button id="clearStorageBtn" class="secondary">🗑 נקה נתונים מקומיים</button>
+        <button id="clearStorageBtn" class="secondary">🗑 נקה נתוני אפליקציה</button>
+        <button id="clearCacheBtn" class="secondary">🔄 עדכן גרסה</button>
       </div>
     </div>
       <input id="importFile" type="file" accept="application/json,.json" style="display:none">
@@ -1175,12 +1176,29 @@ document.getElementById("exportBtn").addEventListener("click", () => {
 });
 
 document.getElementById("clearStorageBtn").addEventListener("click", () => {
-  if (!confirm("למחוק את כל הנתונים המקומיים השמורים?\n(נתוני ארוחות, מזונות מותאמים, הגדרות שבוע, יעדים)")) return;
+  if (!confirm("למחוק את כל נתוני האפליקציה השמורים?\n(נתוני ארוחות, מזונות מותאמים, הגדרות שבוע, יעדים)\n\nשים לב: פעולה זו מוחקת רק את נתוני האפליקציה ב-localStorage.\nלא תשפיע על גרסת הקוד המוצגת (לכך השתמש ב-🔄 עדכן גרסה).")) return;
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(CUSTOM_FOODS_KEY);
   localStorage.removeItem(WEEK_KEY);
   localStorage.removeItem(GOALS_KEY);
   location.reload();
+});
+
+document.getElementById("clearCacheBtn").addEventListener("click", async () => {
+  if (!confirm("לנקות את מטמון הדפדפן ולהטעין מחדש?\n\nפעולה זו תוריד מחדש את כל קבצי האפליקציה ותציג את הגרסה העדכנית.\nנתוני האפליקציה (ארוחות, יעדים וכו׳) לא יימחקו.")) return;
+  try {
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+  } catch (e) {
+    console.error('Cache clear failed:', e);
+  }
+  location.reload(true);
 });
 
 (async () => {
@@ -1388,8 +1406,31 @@ function escapeHtml(str) {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
-    navigator.serviceWorker.register('./sw.js').catch(function (err) {
+    navigator.serviceWorker.register('./sw.js').then(function (reg) {
+      reg.addEventListener('updatefound', function () {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', function () {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New version installed and waiting — show notification
+            const statusEl = document.getElementById('status');
+            if (statusEl) {
+              statusEl.textContent = '✨ גרסה חדשה זמינה! לחץ כאן לרענון';
+              statusEl.style.cursor = 'pointer';
+              statusEl.addEventListener('click', () => location.reload(), { once: true });
+            }
+          }
+        });
+      });
+    }).catch(function (err) {
       console.log('SW registration failed', err);
+    });
+
+    // When the SW controller changes (new SW took over), reload to apply new version
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (reloading) return;
+      reloading = true;
+      window.location.reload();
     });
   });
 }

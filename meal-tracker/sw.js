@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meal-tracker-v6';
+const CACHE_NAME = 'meal-tracker-v7';
 const APP_FILES = [
   './',
   './index.html',
@@ -29,6 +29,30 @@ self.addEventListener('fetch', event => {
 
   if (req.method !== 'GET') return;
 
+  // Network-first for HTML so new deployments are always loaded
+  const url = new URL(req.url);
+  const isHTML = req.destination === 'document' ||
+    url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('/') ||
+    url.pathname === '/meal-tracker';
+
+  if (isHTML) {
+    event.respondWith(
+      fetch(req)
+        .then(networkRes => {
+          const copy = networkRes.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+          return networkRes;
+        })
+        .catch(err => {
+          console.warn('[SW] Network fetch failed for HTML, serving from cache:', err);
+          return caches.match(req).then(cached => cached || caches.match('./index.html'));
+        })
+    );
+    return;
+  }
+
+  // Cache-first for other static assets (JS, CSS, images, JSON)
   event.respondWith(
     caches.match(req).then(cached => {
       return cached || fetch(req).then(networkRes => {
