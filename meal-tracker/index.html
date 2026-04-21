@@ -45,17 +45,23 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 .chart-wrap { padding:0 16px 14px; }
 .chart-card { background:var(--section-bg); border:1px solid var(--section-border); border-radius:14px; padding:12px; }
 .chart-grid { display:flex; align-items:flex-end; gap:10px; min-height:150px; overflow-x:auto; padding-top:6px; position:relative; }
+@media (max-width:599px) {
+  .chart-grid { overflow-x:hidden; gap:6px; }
+}
 .chart-goal-line {
   position:absolute; left:0; right:0; height:0;
   border-top:2px dashed; pointer-events:none; z-index:2;
 }
 .chart-goal-line::after {
   content:attr(data-label);
-  position:absolute; right:4px; top:-16px;
+  position:absolute; right:4px; top:var(--label-offset, -16px);
   font-size:10px; font-weight:700;
   color:var(--label-color, #333);
 }
 .hide-goal-labels .chart-goal-line::after {
+  display:none;
+}
+.hide-goal-lines .chart-goal-line {
   display:none;
 }
 .bar-cal     { background:linear-gradient(180deg,#93c5fd,#1d4ed8); }
@@ -63,9 +69,19 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 .bar-carbs   { background:linear-gradient(180deg,#fdba74,#c2410c); }
 .bar-fat     { background:linear-gradient(180deg,#d8b4fe,#7e22ce); }
 .bar-group { min-width:72px; text-align:center; }
+@media (max-width:599px) {
+  .bar-group { min-width:40px; flex:1; max-width:none; }
+}
 .bar { width:100%; border-radius:10px 10px 0 0; min-height:2px; }
+@media (max-width:599px) {
+  .bar { border-radius:6px 6px 0 0; }
+}
 .bar-value { font-size:12px; color:var(--muted); margin-bottom:6px; }
 .bar-label { font-size:12px; margin-top:6px; white-space:nowrap; }
+@media (max-width:599px) {
+  .bar-value { font-size:10px; margin-bottom:4px; }
+  .bar-label { font-size:10px; margin-top:4px; }
+}
 .table-wrap { padding:12px; overflow:auto; -webkit-overflow-scrolling:touch; }
 table { border-collapse:collapse; width:max-content; min-width:100%; background:#fff; table-layout:auto; white-space:nowrap; font-size:14px; }
 th, td { border:1px solid var(--grid); padding:8px 6px; text-align:center; vertical-align:middle; }
@@ -416,8 +432,11 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
     </div>
 
     <div class="chart-wrap">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+        <label style="font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="showGoalLines" checked style="width:auto;min-height:auto;cursor:pointer;">
+          <span>הצג קווי יעד</span>
+        </label>
         <label style="font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;">
           <input type="checkbox" id="showGoalLabels" style="width:auto;min-height:auto;cursor:pointer;">
           <span>הצג תוויות יעדים</span>
@@ -710,7 +729,7 @@ function renderChart() {
     const macroEl = document.createElement("div");
     macroEl.className = "bar-group";
     macroEl.innerHTML = `
-      <div style="display:flex;align-items:flex-end;gap:6px;justify-content:center;">
+      <div style="display:flex;align-items:flex-end;gap:8px;justify-content:center;">
         <div style="display:flex;flex-direction:column;align-items:center;">
           <div style="font-size:10px;color:#15803d;min-width:20px;">${t.protein||0}</div>
           <div class="bar bar-protein" style="height:${hProt}px;width:18px;" title="חלבון: ${t.protein || 0}ג׳"></div>
@@ -741,20 +760,61 @@ function renderChart() {
     lineEl.setAttribute("data-label", `יעד: ${goals.cal} קל׳`);
     calChartGrid.appendChild(lineEl);
   }
-  [
+  // Collect macro goal lines with their positions
+  const macroGoalLines = [
     { key: "protein", color: "#15803d", label: "יעד חלבון" },
     { key: "carbs",   color: "#c2410c", label: "יעד פח׳"   },
     { key: "fat",     color: "#7e22ce", label: "יעד שומ׳"  },
-  ].forEach(({ key, color, label }) => {
+  ].map(({ key, color, label }) => {
     const gv = goals[key];
-    if (!gv) return;
+    if (!gv) return null;
     const gh = Math.max(2, (gv / maxMacro) * 110);
+    return { gh, color, label, value: gv };
+  }).filter(Boolean);
+
+  // Sort by height (bottom position) to process from bottom to top
+  macroGoalLines.sort((a, b) => a.gh - b.gh);
+
+  // Calculate label offsets to avoid overlap
+  const MIN_LABEL_SPACING = 18; // Minimum pixels between labels
+  const labelOffsets = [];
+  
+  macroGoalLines.forEach((line, index) => {
+    let offset = -16; // Default label position (above the line, in CSS pixels from the line)
+    
+    // Check if this line's label would overlap with previous lines' labels
+    for (let i = 0; i < index; i++) {
+      const prevLine = macroGoalLines[i];
+      const prevOffset = labelOffsets[i];
+      
+      // Calculate actual positions in the chart (bottom position + label offset)
+      const prevLabelPos = prevLine.gh + prevOffset;
+      const currentLabelPos = line.gh + offset;
+      
+      // If labels are too close, push current label higher
+      if (currentLabelPos - prevLabelPos < MIN_LABEL_SPACING) {
+        offset = prevLabelPos + MIN_LABEL_SPACING - line.gh;
+      }
+    }
+    
+    labelOffsets.push(offset);
+  });
+
+  // Render the goal lines with adjusted label positions
+  macroGoalLines.forEach((line, index) => {
     const lineEl = document.createElement("div");
     lineEl.className = "chart-goal-line";
-    lineEl.style.bottom = (gh + BAR_LABEL_OFFSET) + "px";
-    lineEl.style.borderTopColor = color;
-    lineEl.style.setProperty("--label-color", color);
-    lineEl.setAttribute("data-label", `${label}: ${gv}ג׳`);
+    lineEl.style.bottom = (line.gh + BAR_LABEL_OFFSET) + "px";
+    lineEl.style.borderTopColor = line.color;
+    lineEl.style.setProperty("--label-color", line.color);
+    lineEl.setAttribute("data-label", `${line.label}: ${line.value}ג׳`);
+    
+    // Apply custom label offset if different from default
+    const labelOffset = labelOffsets[index];
+    if (labelOffset !== -16) {
+      lineEl.style.setProperty("--label-offset", `${labelOffset}px`);
+    }
+    
     macroChartGrid.appendChild(lineEl);
   });
 }
@@ -1372,9 +1432,20 @@ function initGoalsSection() {
     setTimeout(() => statusEl.textContent = "", 1800);
   });
 
+  // Toggle goal lines visibility
+  const showGoalLinesCheckbox = document.getElementById("showGoalLines");
+  const chartWrap = document.querySelector(".chart-wrap");
+  
+  showGoalLinesCheckbox.addEventListener("change", () => {
+    if (showGoalLinesCheckbox.checked) {
+      chartWrap.classList.remove("hide-goal-lines");
+    } else {
+      chartWrap.classList.add("hide-goal-lines");
+    }
+  });
+
   // Toggle goal labels visibility
   const showGoalLabelsCheckbox = document.getElementById("showGoalLabels");
-  const chartWrap = document.querySelector(".chart-wrap");
   
   // Default state: labels hidden (unchecked)
   chartWrap.classList.add("hide-goal-labels");
