@@ -68,6 +68,10 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 .bar-protein { background:linear-gradient(180deg,#4ade80,#15803d); }
 .bar-carbs   { background:linear-gradient(180deg,#fdba74,#c2410c); }
 .bar-fat     { background:linear-gradient(180deg,#d8b4fe,#7e22ce); }
+.hide-cal #macroChartGrid .bar-cal { display:none !important; }
+.hide-protein #macroChartGrid .bar-protein { display:none !important; }
+.hide-carbs #macroChartGrid .bar-carbs { display:none !important; }
+.hide-fat #macroChartGrid .bar-fat { display:none !important; }
 .bar-group { min-width:72px; text-align:center; }
 @media (max-width:599px) {
   .bar-group { min-width:40px; flex:1; max-width:none; }
@@ -455,10 +459,26 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
       <div class="chart-card" style="margin-bottom:12px;">
         <div class="chart-title">🥗 ערכים תזונתיים לשבוע (הפוך את המסך)</div>
         <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-cal"></span>קלוריות</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-protein"></span>חלבון</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-carbs"></span>פחמימות</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-fat"></span>שומן</span>
+          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="showMacroCal" checked style="width:auto;min-height:auto;cursor:pointer;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-cal"></span>
+            <span>קלוריות</span>
+          </label>
+          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="showMacroProtein" checked style="width:auto;min-height:auto;cursor:pointer;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-protein"></span>
+            <span>חלבון</span>
+          </label>
+          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="showMacroCarbs" checked style="width:auto;min-height:auto;cursor:pointer;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-carbs"></span>
+            <span>פחמימות</span>
+          </label>
+          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="showMacroFat" checked style="width:auto;min-height:auto;cursor:pointer;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-fat"></span>
+            <span>שומן</span>
+          </label>
         </div>
         <div class="chart-grid" id="macroChartGrid"></div>
       </div>
@@ -1585,6 +1605,44 @@ function initGoalsSection() {
       chartWrap.classList.remove("hide-goal-labels");
     } else {
       chartWrap.classList.add("hide-goal-labels");
+    }
+  });
+
+  // Toggle macro chart bars visibility
+  const showMacroCalCheckbox = document.getElementById("showMacroCal");
+  const showMacroProteinCheckbox = document.getElementById("showMacroProtein");
+  const showMacroCarbsCheckbox = document.getElementById("showMacroCarbs");
+  const showMacroFatCheckbox = document.getElementById("showMacroFat");
+  
+  showMacroCalCheckbox.addEventListener("change", () => {
+    if (showMacroCalCheckbox.checked) {
+      chartWrap.classList.remove("hide-cal");
+    } else {
+      chartWrap.classList.add("hide-cal");
+    }
+  });
+  
+  showMacroProteinCheckbox.addEventListener("change", () => {
+    if (showMacroProteinCheckbox.checked) {
+      chartWrap.classList.remove("hide-protein");
+    } else {
+      chartWrap.classList.add("hide-protein");
+    }
+  });
+  
+  showMacroCarbsCheckbox.addEventListener("change", () => {
+    if (showMacroCarbsCheckbox.checked) {
+      chartWrap.classList.remove("hide-carbs");
+    } else {
+      chartWrap.classList.add("hide-carbs");
+    }
+  });
+  
+  showMacroFatCheckbox.addEventListener("change", () => {
+    if (showMacroFatCheckbox.checked) {
+      chartWrap.classList.remove("hide-fat");
+    } else {
+      chartWrap.classList.add("hide-fat");
     }
   });
 }
