@@ -452,6 +452,7 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
       <div class="chart-card" style="margin-bottom:12px;">
         <div class="chart-title">🍎 ערכים תזונתיים ליום הנבחר</div>
         <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-cal"></span>קלוריות</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-protein"></span>חלבון</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-carbs"></span>פחמימות</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-fat"></span>שומן</span>
@@ -461,6 +462,7 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
       <div class="chart-card">
         <div class="chart-title">🥗 ערכים תזונתיים לשבוע (הפוך את המסך)</div>
         <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-cal"></span>קלוריות</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-protein"></span>חלבון</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-carbs"></span>פחמימות</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-fat"></span>שומן</span>
@@ -747,6 +749,10 @@ function renderChart() {
     macroEl.innerHTML = `
       <div style="display:flex;align-items:flex-end;gap:8px;justify-content:center;">
         <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="font-size:10px;color:#1d4ed8;min-width:20px;">${t.cal||0}</div>
+          <div class="bar bar-cal" style="height:${hCal}px;width:18px;" title="קלוריות: ${t.cal || 0}"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
           <div style="font-size:10px;color:#15803d;min-width:20px;">${t.protein||0}</div>
           <div class="bar bar-protein" style="height:${hProt}px;width:18px;" title="חלבון: ${t.protein || 0}ג׳"></div>
         </div>
@@ -771,6 +777,7 @@ function renderChart() {
       const selectedDayData = dayTotals(selectedDayIndex);
       const selectedDayLabel = DAYS[selectedDayIndex][1];
       
+      const selectedHCal   = calcBarHeight(selectedDayData.cal, maxCal);
       const selectedHProt  = calcBarHeight(selectedDayData.protein, maxMacro);
       const selectedHCarbs = calcBarHeight(selectedDayData.carbs, maxMacro);
       const selectedHFat   = calcBarHeight(selectedDayData.fat, maxMacro);
@@ -780,6 +787,11 @@ function renderChart() {
       selectedDayEl.style.flex = "1";
       selectedDayEl.innerHTML = `
         <div style="display:flex;align-items:flex-end;gap:12px;justify-content:center;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:14px;color:#1d4ed8;min-width:40px;font-weight:700;">${selectedDayData.cal||0}</div>
+            <div class="bar bar-cal" style="height:${selectedHCal}px;width:40px;" title="קלוריות: ${selectedDayData.cal || 0}"></div>
+            <div style="font-size:11px;margin-top:6px;">קלוריות</div>
+          </div>
           <div style="display:flex;flex-direction:column;align-items:center;">
             <div style="font-size:14px;color:#15803d;min-width:40px;font-weight:700;">${selectedDayData.protein||0}</div>
             <div class="bar bar-protein" style="height:${selectedHProt}px;width:40px;" title="חלבון: ${selectedDayData.protein || 0}ג׳"></div>
