@@ -61,6 +61,9 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 .hide-goal-labels .chart-goal-line::after {
   display:none;
 }
+.hide-goal-lines .chart-goal-line {
+  display:none;
+}
 .bar-cal     { background:linear-gradient(180deg,#93c5fd,#1d4ed8); }
 .bar-protein { background:linear-gradient(180deg,#4ade80,#15803d); }
 .bar-carbs   { background:linear-gradient(180deg,#fdba74,#c2410c); }
@@ -426,8 +429,11 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
     </div>
 
     <div class="chart-wrap">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+        <label style="font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="showGoalLines" checked style="width:auto;min-height:auto;cursor:pointer;">
+          <span>הצג קווי יעד</span>
+        </label>
         <label style="font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;">
           <input type="checkbox" id="showGoalLabels" style="width:auto;min-height:auto;cursor:pointer;">
           <span>הצג תוויות יעדים</span>
@@ -720,7 +726,7 @@ function renderChart() {
     const macroEl = document.createElement("div");
     macroEl.className = "bar-group";
     macroEl.innerHTML = `
-      <div style="display:flex;align-items:flex-end;gap:6px;justify-content:center;">
+      <div style="display:flex;align-items:flex-end;gap:8px;justify-content:center;">
         <div style="display:flex;flex-direction:column;align-items:center;">
           <div style="font-size:10px;color:#15803d;min-width:20px;">${t.protein||0}</div>
           <div class="bar bar-protein" style="height:${hProt}px;width:18px;" title="חלבון: ${t.protein || 0}ג׳"></div>
@@ -1382,9 +1388,20 @@ function initGoalsSection() {
     setTimeout(() => statusEl.textContent = "", 1800);
   });
 
+  // Toggle goal lines visibility
+  const showGoalLinesCheckbox = document.getElementById("showGoalLines");
+  const chartWrap = document.querySelector(".chart-wrap");
+  
+  showGoalLinesCheckbox.addEventListener("change", () => {
+    if (showGoalLinesCheckbox.checked) {
+      chartWrap.classList.remove("hide-goal-lines");
+    } else {
+      chartWrap.classList.add("hide-goal-lines");
+    }
+  });
+
   // Toggle goal labels visibility
   const showGoalLabelsCheckbox = document.getElementById("showGoalLabels");
-  const chartWrap = document.querySelector(".chart-wrap");
   
   // Default state: labels hidden (unchecked)
   chartWrap.classList.add("hide-goal-labels");
