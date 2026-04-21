@@ -46,12 +46,12 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 .chart-card { background:var(--section-bg); border:1px solid var(--section-border); border-radius:14px; padding:12px; }
 .chart-grid { display:flex; align-items:flex-end; gap:10px; min-height:150px; overflow-x:auto; padding-top:6px; position:relative; }
 .chart-goal-line {
-  position:absolute; left:0; width:100%; height:0;
+  position:absolute; left:0; right:0; height:0;
   border-top:2px dashed; pointer-events:none; z-index:2;
 }
 .chart-goal-line::after {
   content:attr(data-label);
-  position:absolute; left:4px; top:-16px;
+  position:absolute; right:4px; top:-16px;
   font-size:10px; font-weight:700;
   color:var(--label-color, #333);
 }
