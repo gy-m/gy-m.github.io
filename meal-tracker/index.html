@@ -403,15 +403,21 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
     </div>
 
     <div class="chart-wrap">
-      <div class="chart-card">
-        <div class="chart-title">📊 קלוריות ומאקרו ליום</div>
+      <div class="chart-card" style="margin-bottom:12px;">
+        <div class="chart-title">🔥 קלוריות ליום</div>
         <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-cal"></span>קלוריות</span>
+        </div>
+        <div class="chart-grid" id="calChartGrid"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">🥗 מאקרו ליום</div>
+        <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-protein"></span>חלבון</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-carbs"></span>פחמימות</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-fat"></span>שומן</span>
         </div>
-        <div class="chart-grid" id="chartGrid"></div>
+        <div class="chart-grid" id="macroChartGrid"></div>
       </div>
     </div>
 
@@ -549,7 +555,8 @@ function getAllFoods() {
 
 const tbody = document.getElementById("tbody");
 const statusEl = document.getElementById("status");
-const chartGrid = document.getElementById("chartGrid");
+const calChartGrid   = document.getElementById("calChartGrid");
+const macroChartGrid = document.getElementById("macroChartGrid");
 
 function buildDefaultRows() {
   return [];
@@ -656,7 +663,8 @@ function calcBarHeight(value, max) {
 }
 
 function renderChart() {
-  chartGrid.innerHTML = "";
+  calChartGrid.innerHTML = "";
+  macroChartGrid.innerHTML = "";
   const totals = DAYS.map((d, i) => ({ label: d[1], ...dayTotals(i) }));
   const maxCal   = Math.max(...totals.map(t => t.cal     || 0), 100);
   const maxMacro = Math.max(...totals.map(t => Math.max(t.protein || 0, t.carbs || 0, t.fat || 0)), 1);
@@ -665,20 +673,32 @@ function renderChart() {
     const hProt  = calcBarHeight(t.protein, maxMacro);
     const hCarbs = calcBarHeight(t.carbs,   maxMacro);
     const hFat   = calcBarHeight(t.fat,     maxMacro);
-    const el = document.createElement("div");
-    el.className = "bar-group";
-    el.innerHTML = `
+
+    // calories chart column
+    const calEl = document.createElement("div");
+    calEl.className = "bar-group";
+    calEl.innerHTML = `
       <div class="bar-value">${t.cal || 0}</div>
       <div style="display:flex;align-items:flex-end;gap:2px;justify-content:center;">
-        <div class="bar bar-cal"     style="height:${hCal}px;width:18px;" title="קלוריות: ${t.cal || 0}"></div>
-        <div class="bar bar-protein" style="height:${hProt}px;width:10px;" title="חלבון: ${t.protein || 0}ג׳"></div>
-        <div class="bar bar-carbs"   style="height:${hCarbs}px;width:10px;" title="פחמימות: ${t.carbs || 0}ג׳"></div>
-        <div class="bar bar-fat"     style="height:${hFat}px;width:10px;" title="שומן: ${t.fat || 0}ג׳"></div>
+        <div class="bar bar-cal" style="height:${hCal}px;width:22px;" title="קלוריות: ${t.cal || 0}"></div>
       </div>
       <div class="bar-label">${t.label}</div>
-      <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:2px;">ח:${t.protein||0}&nbsp;פ:${t.carbs||0}&nbsp;ש:${t.fat||0}</div>
     `;
-    chartGrid.appendChild(el);
+    calChartGrid.appendChild(calEl);
+
+    // macros chart column
+    const macroEl = document.createElement("div");
+    macroEl.className = "bar-group";
+    macroEl.innerHTML = `
+      <div class="bar-value" style="font-size:10px;">${t.protein||0}/<span style="color:#c2410c">${t.carbs||0}</span>/<span style="color:#7e22ce">${t.fat||0}</span></div>
+      <div style="display:flex;align-items:flex-end;gap:2px;justify-content:center;">
+        <div class="bar bar-protein" style="height:${hProt}px;width:14px;" title="חלבון: ${t.protein || 0}ג׳"></div>
+        <div class="bar bar-carbs"   style="height:${hCarbs}px;width:14px;" title="פחמימות: ${t.carbs || 0}ג׳"></div>
+        <div class="bar bar-fat"     style="height:${hFat}px;width:14px;"   title="שומן: ${t.fat || 0}ג׳"></div>
+      </div>
+      <div class="bar-label">${t.label}</div>
+    `;
+    macroChartGrid.appendChild(macroEl);
   });
 }
 
