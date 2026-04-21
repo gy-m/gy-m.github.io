@@ -453,14 +453,8 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
       <div style="margin-bottom:12px;">
         <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:var(--muted)">הצגת מדדים</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;">
-          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <input type="checkbox" id="showAllMetrics" style="width:auto;min-height:auto;cursor:pointer;">
-            <span>הצג את כלל המדדים</span>
-          </label>
-          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <input type="checkbox" id="hideAllMetrics" style="width:auto;min-height:auto;cursor:pointer;">
-            <span>הסתר את כלל המדדים</span>
-          </label>
+          <button id="showAllMetrics" class="small">הצג את כלל המדדים</button>
+          <button id="hideAllMetrics" class="small">הסתר את כלל המדדים</button>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;">
           <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
@@ -1650,9 +1644,9 @@ function initGoalsSection() {
   setupMacroBarToggle("showNutritionCarbs", "hide-carbs");
   setupMacroBarToggle("showNutritionFat", "hide-fat");
 
-  // Handle "show all metrics" checkbox
-  const showAllCheckbox = document.getElementById("showAllMetrics");
-  const hideAllCheckbox = document.getElementById("hideAllMetrics");
+  // Handle "show all metrics" button
+  const showAllButton = document.getElementById("showAllMetrics");
+  const hideAllButton = document.getElementById("hideAllMetrics");
   const metricCheckboxes = [
     document.getElementById("showNutritionCal"),
     document.getElementById("showNutritionProtein"),
@@ -1660,42 +1654,26 @@ function initGoalsSection() {
     document.getElementById("showNutritionFat")
   ];
 
-  if (showAllCheckbox) {
-    showAllCheckbox.addEventListener("change", () => {
-      if (showAllCheckbox.checked) {
-        metricCheckboxes.forEach(checkbox => {
-          if (checkbox && !checkbox.checked) {
-            checkbox.checked = true;
-            checkbox.dispatchEvent(new Event('change'));
-          }
-        });
-        // Uncheck "hide all" checkbox
-        if (hideAllCheckbox) {
-          hideAllCheckbox.checked = false;
+  if (showAllButton) {
+    showAllButton.addEventListener("click", () => {
+      metricCheckboxes.forEach(checkbox => {
+        if (checkbox && !checkbox.checked) {
+          checkbox.checked = true;
+          checkbox.dispatchEvent(new Event('change'));
         }
-        // Uncheck the "show all" checkbox itself after action
-        showAllCheckbox.checked = false;
-      }
+      });
     });
   }
 
-  // Handle "hide all metrics" checkbox
-  if (hideAllCheckbox) {
-    hideAllCheckbox.addEventListener("change", () => {
-      if (hideAllCheckbox.checked) {
-        metricCheckboxes.forEach(checkbox => {
-          if (checkbox && checkbox.checked) {
-            checkbox.checked = false;
-            checkbox.dispatchEvent(new Event('change'));
-          }
-        });
-        // Uncheck "show all" checkbox
-        if (showAllCheckbox) {
-          showAllCheckbox.checked = false;
+  // Handle "hide all metrics" button
+  if (hideAllButton) {
+    hideAllButton.addEventListener("click", () => {
+      metricCheckboxes.forEach(checkbox => {
+        if (checkbox && checkbox.checked) {
+          checkbox.checked = false;
+          checkbox.dispatchEvent(new Event('change'));
         }
-        // Uncheck the "hide all" checkbox itself after action
-        hideAllCheckbox.checked = false;
-      }
+      });
     });
   }
 }
