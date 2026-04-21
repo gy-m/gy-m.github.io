@@ -1586,6 +1586,11 @@ function initGoalsSection() {
   const showGoalLinesCheckbox = document.getElementById("showGoalLines");
   const chartWrap = document.querySelector(".chart-wrap");
   
+  if (!showGoalLinesCheckbox || !chartWrap) {
+    console.error("Required elements not found:", { showGoalLinesCheckbox, chartWrap });
+    return;
+  }
+  
   showGoalLinesCheckbox.addEventListener("change", () => {
     if (showGoalLinesCheckbox.checked) {
       chartWrap.classList.remove("hide-goal-lines");
@@ -1611,6 +1616,10 @@ function initGoalsSection() {
   // Toggle macro chart bars visibility
   const setupMacroBarToggle = (checkboxId, className) => {
     const checkbox = document.getElementById(checkboxId);
+    if (!checkbox) {
+      console.error(`Checkbox ${checkboxId} not found`);
+      return;
+    }
     checkbox.addEventListener("change", () => {
       if (checkbox.checked) {
         chartWrap.classList.remove(className);
