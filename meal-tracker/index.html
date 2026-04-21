@@ -68,10 +68,10 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 .bar-protein { background:linear-gradient(180deg,#4ade80,#15803d); }
 .bar-carbs   { background:linear-gradient(180deg,#fdba74,#c2410c); }
 .bar-fat     { background:linear-gradient(180deg,#d8b4fe,#7e22ce); }
-.hide-cal #macroChartGrid div:has(> .bar-cal) { display:none; }
-.hide-protein #macroChartGrid div:has(> .bar-protein) { display:none; }
-.hide-carbs #macroChartGrid div:has(> .bar-carbs) { display:none; }
-.hide-fat #macroChartGrid div:has(> .bar-fat) { display:none; }
+.hide-cal .bar-container-cal { display:none; }
+.hide-protein .bar-container-protein { display:none; }
+.hide-carbs .bar-container-carbs { display:none; }
+.hide-fat .bar-container-fat { display:none; }
 .bar-group { min-width:72px; text-align:center; }
 @media (max-width:599px) {
   .bar-group { min-width:40px; flex:1; max-width:none; }
@@ -773,19 +773,19 @@ function renderChart() {
     macroEl.className = "bar-group";
     macroEl.innerHTML = `
       <div style="display:flex;align-items:flex-end;gap:8px;justify-content:center;">
-        <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bar-container bar-container-cal" style="display:flex;flex-direction:column;align-items:center;">
           <div style="font-size:10px;color:#1d4ed8;min-width:20px;">${t.cal||0}</div>
           <div class="bar bar-cal" style="height:${hCal}px;width:18px;" title="קלוריות: ${t.cal || 0}"></div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bar-container bar-container-protein" style="display:flex;flex-direction:column;align-items:center;">
           <div style="font-size:10px;color:#15803d;min-width:20px;">${t.protein||0}</div>
           <div class="bar bar-protein" style="height:${hProt}px;width:18px;" title="חלבון: ${t.protein || 0}ג׳"></div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bar-container bar-container-carbs" style="display:flex;flex-direction:column;align-items:center;">
           <div style="font-size:10px;color:#c2410c;min-width:20px;">${t.carbs||0}</div>
           <div class="bar bar-carbs" style="height:${hCarbs}px;width:18px;" title="פחמימות: ${t.carbs || 0}ג׳"></div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bar-container bar-container-fat" style="display:flex;flex-direction:column;align-items:center;">
           <div style="font-size:10px;color:#7e22ce;min-width:20px;">${t.fat||0}</div>
           <div class="bar bar-fat" style="height:${hFat}px;width:18px;" title="שומן: ${t.fat || 0}ג׳"></div>
         </div>
