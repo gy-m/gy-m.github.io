@@ -765,82 +765,84 @@ function renderChart() {
   });
 
   // Render selected day chart
-  const selectedDayIndex = quickDaySelect ? parseInt(quickDaySelect.value, 10) : 0;
-  if (!isNaN(selectedDayIndex) && selectedDayIndex >= 0 && selectedDayIndex < DAYS.length) {
-    const selectedDayData = dayTotals(selectedDayIndex);
-    const selectedDayLabel = DAYS[selectedDayIndex][1];
-    
-    const selectedHProt  = calcBarHeight(selectedDayData.protein, maxMacro);
-    const selectedHCarbs = calcBarHeight(selectedDayData.carbs, maxMacro);
-    const selectedHFat   = calcBarHeight(selectedDayData.fat, maxMacro);
-    
-    const selectedDayEl = document.createElement("div");
-    selectedDayEl.className = "bar-group";
-    selectedDayEl.style.flex = "1";
-    selectedDayEl.innerHTML = `
-      <div style="display:flex;align-items:flex-end;gap:12px;justify-content:center;">
-        <div style="display:flex;flex-direction:column;align-items:center;">
-          <div style="font-size:14px;color:#15803d;min-width:40px;font-weight:700;">${selectedDayData.protein||0}</div>
-          <div class="bar bar-protein" style="height:${selectedHProt}px;width:40px;" title="חלבון: ${selectedDayData.protein || 0}ג׳"></div>
-          <div style="font-size:11px;margin-top:6px;">חלבון</div>
+  if (quickDaySelect) {
+    const selectedDayIndex = parseInt(quickDaySelect.value, 10) || 0;
+    if (!isNaN(selectedDayIndex) && selectedDayIndex >= 0 && selectedDayIndex < DAYS.length) {
+      const selectedDayData = dayTotals(selectedDayIndex);
+      const selectedDayLabel = DAYS[selectedDayIndex][1];
+      
+      const selectedHProt  = calcBarHeight(selectedDayData.protein, maxMacro);
+      const selectedHCarbs = calcBarHeight(selectedDayData.carbs, maxMacro);
+      const selectedHFat   = calcBarHeight(selectedDayData.fat, maxMacro);
+      
+      const selectedDayEl = document.createElement("div");
+      selectedDayEl.className = "bar-group";
+      selectedDayEl.style.flex = "1";
+      selectedDayEl.innerHTML = `
+        <div style="display:flex;align-items:flex-end;gap:12px;justify-content:center;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:14px;color:#15803d;min-width:40px;font-weight:700;">${selectedDayData.protein||0}</div>
+            <div class="bar bar-protein" style="height:${selectedHProt}px;width:40px;" title="חלבון: ${selectedDayData.protein || 0}ג׳"></div>
+            <div style="font-size:11px;margin-top:6px;">חלבון</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:14px;color:#c2410c;min-width:40px;font-weight:700;">${selectedDayData.carbs||0}</div>
+            <div class="bar bar-carbs" style="height:${selectedHCarbs}px;width:40px;" title="פחמימות: ${selectedDayData.carbs || 0}ג׳"></div>
+            <div style="font-size:11px;margin-top:6px;">פחמימות</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:14px;color:#7e22ce;min-width:40px;font-weight:700;">${selectedDayData.fat||0}</div>
+            <div class="bar bar-fat" style="height:${selectedHFat}px;width:40px;" title="שומן: ${selectedDayData.fat || 0}ג׳"></div>
+            <div style="font-size:11px;margin-top:6px;">שומן</div>
+          </div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;">
-          <div style="font-size:14px;color:#c2410c;min-width:40px;font-weight:700;">${selectedDayData.carbs||0}</div>
-          <div class="bar bar-carbs" style="height:${selectedHCarbs}px;width:40px;" title="פחמימות: ${selectedDayData.carbs || 0}ג׳"></div>
-          <div style="font-size:11px;margin-top:6px;">פחמימות</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;">
-          <div style="font-size:14px;color:#7e22ce;min-width:40px;font-weight:700;">${selectedDayData.fat||0}</div>
-          <div class="bar bar-fat" style="height:${selectedHFat}px;width:40px;" title="שומן: ${selectedDayData.fat || 0}ג׳"></div>
-          <div style="font-size:11px;margin-top:6px;">שומן</div>
-        </div>
-      </div>
-      <div class="bar-label" style="margin-top:8px;">${selectedDayLabel}</div>
-    `;
-    selectedDayChartGrid.appendChild(selectedDayEl);
+        <div class="bar-label" style="margin-top:8px;">${selectedDayLabel}</div>
+      `;
+      selectedDayChartGrid.appendChild(selectedDayEl);
 
-    // Add goal lines to selected day chart
-    const selectedDayGoalLines = [
-      { key: "protein", color: "#15803d", label: "יעד חלבון" },
-      { key: "carbs",   color: "#c2410c", label: "יעד פח׳"   },
-      { key: "fat",     color: "#7e22ce", label: "יעד שומ׳"  },
-    ].map(({ key, color, label }) => {
-      const gv = goals[key];
-      if (!gv) return null;
-      const gh = Math.max(2, (gv / maxMacro) * 110);
-      return { gh, color, label, value: gv };
-    }).filter(Boolean);
+      // Add goal lines to selected day chart
+      const selectedDayGoalLines = [
+        { key: "protein", color: "#15803d", label: "יעד חלבון" },
+        { key: "carbs",   color: "#c2410c", label: "יעד פח׳"   },
+        { key: "fat",     color: "#7e22ce", label: "יעד שומ׳"  },
+      ].map(({ key, color, label }) => {
+        const gv = goals[key];
+        if (!gv) return null;
+        const gh = Math.max(2, (gv / maxMacro) * 110);
+        return { gh, color, label, value: gv };
+      }).filter(Boolean);
 
-    selectedDayGoalLines.sort((a, b) => a.gh - b.gh);
-    
-    const selectedLabelOffsets = [];
-    selectedDayGoalLines.forEach((line, index) => {
-      let offset = -16;
-      for (let i = 0; i < index; i++) {
-        const prevLine = selectedDayGoalLines[i];
-        const prevOffset = selectedLabelOffsets[i];
-        const prevLabelPos = prevLine.gh + prevOffset;
-        const currentLabelPos = line.gh + offset;
-        if (currentLabelPos - prevLabelPos < MIN_LABEL_SPACING) {
-          offset = prevLabelPos + MIN_LABEL_SPACING - line.gh;
+      selectedDayGoalLines.sort((a, b) => a.gh - b.gh);
+      
+      const selectedLabelOffsets = [];
+      selectedDayGoalLines.forEach((line, index) => {
+        let offset = -16;
+        for (let i = 0; i < index; i++) {
+          const prevLine = selectedDayGoalLines[i];
+          const prevOffset = selectedLabelOffsets[i];
+          const prevLabelPos = prevLine.gh + prevOffset;
+          const currentLabelPos = line.gh + offset;
+          if (currentLabelPos - prevLabelPos < MIN_LABEL_SPACING) {
+            offset = prevLabelPos + MIN_LABEL_SPACING - line.gh;
+          }
         }
-      }
-      selectedLabelOffsets.push(offset);
-    });
+        selectedLabelOffsets.push(offset);
+      });
 
-    selectedDayGoalLines.forEach((line, index) => {
-      const lineEl = document.createElement("div");
-      lineEl.className = "chart-goal-line";
-      lineEl.style.bottom = (line.gh + BAR_LABEL_OFFSET) + "px";
-      lineEl.style.borderTopColor = line.color;
-      lineEl.style.setProperty("--label-color", line.color);
-      lineEl.setAttribute("data-label", `${line.label}: ${line.value}ג׳`);
-      const labelOffset = selectedLabelOffsets[index];
-      if (labelOffset !== -16) {
-        lineEl.style.setProperty("--label-offset", `${labelOffset}px`);
-      }
-      selectedDayChartGrid.appendChild(lineEl);
-    });
+      selectedDayGoalLines.forEach((line, index) => {
+        const lineEl = document.createElement("div");
+        lineEl.className = "chart-goal-line";
+        lineEl.style.bottom = (line.gh + BAR_LABEL_OFFSET) + "px";
+        lineEl.style.borderTopColor = line.color;
+        lineEl.style.setProperty("--label-color", line.color);
+        lineEl.setAttribute("data-label", `${line.label}: ${line.value}ג׳`);
+        const labelOffset = selectedLabelOffsets[index];
+        if (labelOffset !== -16) {
+          lineEl.style.setProperty("--label-offset", `${labelOffset}px`);
+        }
+        selectedDayChartGrid.appendChild(lineEl);
+      });
+    }
   }
 
   // Goal indicator lines for calorie chart
