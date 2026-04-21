@@ -55,6 +55,9 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
   font-size:10px; font-weight:700;
   color:var(--label-color, #333);
 }
+.hide-goal-labels .chart-goal-line::after {
+  display:none;
+}
 .bar-cal     { background:linear-gradient(180deg,#93c5fd,#1d4ed8); }
 .bar-protein { background:linear-gradient(180deg,#4ade80,#15803d); }
 .bar-carbs   { background:linear-gradient(180deg,#fdba74,#c2410c); }
@@ -413,6 +416,13 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
     </div>
 
     <div class="chart-wrap">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div></div>
+        <label style="font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="showGoalLabels" style="width:auto;min-height:auto;cursor:pointer;">
+          <span>הצג תוויות יעדים</span>
+        </label>
+      </div>
       <div class="chart-card" style="margin-bottom:12px;">
         <div class="chart-title">🔥 קלוריות ליום</div>
         <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
@@ -1360,6 +1370,21 @@ function initGoalsSection() {
     renderChart();
     statusEl.textContent = "היעדים נשמרו";
     setTimeout(() => statusEl.textContent = "", 1800);
+  });
+
+  // Toggle goal labels visibility
+  const showGoalLabelsCheckbox = document.getElementById("showGoalLabels");
+  const chartWrap = document.querySelector(".chart-wrap");
+  
+  // Default state: labels hidden (unchecked)
+  chartWrap.classList.add("hide-goal-labels");
+  
+  showGoalLabelsCheckbox.addEventListener("change", () => {
+    if (showGoalLabelsCheckbox.checked) {
+      chartWrap.classList.remove("hide-goal-labels");
+    } else {
+      chartWrap.classList.add("hide-goal-labels");
+    }
   });
 }
 
