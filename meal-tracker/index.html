@@ -443,13 +443,6 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
         </label>
       </div>
       <div class="chart-card" style="margin-bottom:12px;">
-        <div class="chart-title">🔥 קלוריות לשבוע</div>
-        <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-cal"></span>קלוריות</span>
-        </div>
-        <div class="chart-grid" id="calChartGrid"></div>
-      </div>
-      <div class="chart-card" style="margin-bottom:12px;">
         <div class="chart-title">🍎 ערכים תזונתיים ליום הנבחר</div>
         <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-cal"></span>קלוריות</span>
@@ -459,7 +452,7 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
         </div>
         <div class="chart-grid" id="selectedDayChartGrid"></div>
       </div>
-      <div class="chart-card">
+      <div class="chart-card" style="margin-bottom:12px;">
         <div class="chart-title">🥗 ערכים תזונתיים לשבוע (הפוך את המסך)</div>
         <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-cal"></span>קלוריות</span>
@@ -468,6 +461,18 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-fat"></span>שומן</span>
         </div>
         <div class="chart-grid" id="macroChartGrid"></div>
+      </div>
+      <div class="chart-card custom-food-section" id="calChartSection">
+        <div class="title" id="calChartToggle">
+          <span>🔥 קלוריות לשבוע</span>
+          <span class="toggle-icon">+</span>
+        </div>
+        <div class="custom-food-body">
+          <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-cal"></span>קלוריות</span>
+          </div>
+          <div class="chart-grid" id="calChartGrid"></div>
+        </div>
       </div>
     </div>
 
@@ -814,14 +819,15 @@ function renderChart() {
 
       // Add goal lines to selected day chart
       const selectedDayGoalLines = [
-        { key: "protein", color: "#15803d", label: "יעד חלבון" },
-        { key: "carbs",   color: "#c2410c", label: "יעד פח׳"   },
-        { key: "fat",     color: "#7e22ce", label: "יעד שומ׳"  },
-      ].map(({ key, color, label }) => {
+        { key: "cal",     color: "#2563eb", label: "יעד קל׳",    max: maxCal,   unit: "" },
+        { key: "protein", color: "#15803d", label: "יעד חלבון", max: maxMacro, unit: "ג׳" },
+        { key: "carbs",   color: "#c2410c", label: "יעד פח׳",   max: maxMacro, unit: "ג׳" },
+        { key: "fat",     color: "#7e22ce", label: "יעד שומ׳",  max: maxMacro, unit: "ג׳" },
+      ].map(({ key, color, label, max, unit }) => {
         const gv = goals[key];
         if (!gv) return null;
-        const gh = Math.max(2, (gv / maxMacro) * 110);
-        return { gh, color, label, value: gv };
+        const gh = Math.max(2, (gv / max) * 110);
+        return { gh, color, label, value: gv, unit };
       }).filter(Boolean);
 
       selectedDayGoalLines.sort((a, b) => a.gh - b.gh);
@@ -847,7 +853,7 @@ function renderChart() {
         lineEl.style.bottom = (line.gh + BAR_LABEL_OFFSET) + "px";
         lineEl.style.borderTopColor = line.color;
         lineEl.style.setProperty("--label-color", line.color);
-        lineEl.setAttribute("data-label", `${line.label}: ${line.value}ג׳`);
+        lineEl.setAttribute("data-label", `${line.label}: ${line.value}${line.unit}`);
         const labelOffset = selectedLabelOffsets[index];
         if (labelOffset !== -16) {
           lineEl.style.setProperty("--label-offset", `${labelOffset}px`);
@@ -870,14 +876,15 @@ function renderChart() {
   }
   // Collect macro goal lines with their positions
   const macroGoalLines = [
-    { key: "protein", color: "#15803d", label: "יעד חלבון" },
-    { key: "carbs",   color: "#c2410c", label: "יעד פח׳"   },
-    { key: "fat",     color: "#7e22ce", label: "יעד שומ׳"  },
-  ].map(({ key, color, label }) => {
+    { key: "cal",     color: "#2563eb", label: "יעד קל׳",    max: maxCal,   unit: "" },
+    { key: "protein", color: "#15803d", label: "יעד חלבון", max: maxMacro, unit: "ג׳" },
+    { key: "carbs",   color: "#c2410c", label: "יעד פח׳",   max: maxMacro, unit: "ג׳" },
+    { key: "fat",     color: "#7e22ce", label: "יעד שומ׳",  max: maxMacro, unit: "ג׳" },
+  ].map(({ key, color, label, max, unit }) => {
     const gv = goals[key];
     if (!gv) return null;
-    const gh = Math.max(2, (gv / maxMacro) * 110);
-    return { gh, color, label, value: gv };
+    const gh = Math.max(2, (gv / max) * 110);
+    return { gh, color, label, value: gv, unit };
   }).filter(Boolean);
 
   // Sort by height (bottom position) to process from bottom to top
@@ -914,7 +921,7 @@ function renderChart() {
     lineEl.style.bottom = (line.gh + BAR_LABEL_OFFSET) + "px";
     lineEl.style.borderTopColor = line.color;
     lineEl.style.setProperty("--label-color", line.color);
-    lineEl.setAttribute("data-label", `${line.label}: ${line.value}ג׳`);
+    lineEl.setAttribute("data-label", `${line.label}: ${line.value}${line.unit}`);
     
     // Apply custom label offset if different from default
     const labelOffset = labelOffsets[index];
@@ -1376,6 +1383,7 @@ document.getElementById("clearStorageBtn").addEventListener("click", () => {
   initQuickAdd();
   initWeekPicker();
   initCustomFoodSection();
+  initCalChartSection();
   render();
 })();
 
@@ -1522,6 +1530,14 @@ function initCustomFoodSection() {
   });
 
   renderCustomFoodList();
+}
+
+function initCalChartSection() {
+  const section = document.getElementById("calChartSection");
+  const toggle = document.getElementById("calChartToggle");
+  if (toggle) {
+    toggle.addEventListener("click", () => section.classList.toggle("open"));
+  }
 }
 
 function initGoalsSection() {
