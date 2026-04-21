@@ -44,7 +44,17 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 .quickadd-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .chart-wrap { padding:0 16px 14px; }
 .chart-card { background:var(--section-bg); border:1px solid var(--section-border); border-radius:14px; padding:12px; }
-.chart-grid { display:flex; align-items:flex-end; gap:10px; min-height:150px; overflow-x:auto; padding-top:6px; }
+.chart-grid { display:flex; align-items:flex-end; gap:10px; min-height:150px; overflow-x:auto; padding-top:6px; position:relative; }
+.chart-goal-line {
+  position:absolute; left:0; right:0; height:0;
+  border-top:2px dashed; pointer-events:none; z-index:2;
+}
+.chart-goal-line::after {
+  content:attr(data-label);
+  position:absolute; right:4px; top:-16px;
+  font-size:10px; font-weight:700;
+  background:rgba(255,255,255,0.85); padding:0 3px; border-radius:3px;
+}
 .bar-cal     { background:linear-gradient(180deg,#93c5fd,#1d4ed8); }
 .bar-protein { background:linear-gradient(180deg,#4ade80,#15803d); }
 .bar-carbs   { background:linear-gradient(180deg,#fdba74,#c2410c); }
@@ -666,8 +676,8 @@ function renderChart() {
   calChartGrid.innerHTML = "";
   macroChartGrid.innerHTML = "";
   const totals = DAYS.map((d, i) => ({ label: d[1], ...dayTotals(i) }));
-  const maxCal   = Math.max(...totals.map(t => t.cal     || 0), 100);
-  const maxMacro = Math.max(...totals.map(t => Math.max(t.protein || 0, t.carbs || 0, t.fat || 0)), 1);
+  const maxCal   = Math.max(...totals.map(t => t.cal     || 0), goals.cal     || 0, 100);
+  const maxMacro = Math.max(...totals.map(t => Math.max(t.protein || 0, t.carbs || 0, t.fat || 0)), goals.protein || 0, goals.carbs || 0, goals.fat || 0, 1);
   totals.forEach(t => {
     const hCal   = calcBarHeight(t.cal,     maxCal);
     const hProt  = calcBarHeight(t.protein, maxMacro);
@@ -707,6 +717,33 @@ function renderChart() {
       <div class="bar-label">${t.label}</div>
     `;
     macroChartGrid.appendChild(macroEl);
+  });
+
+  // Goal indicator lines (20px offset = bar-label height below bars)
+  const BAR_LABEL_OFFSET = 20;
+  if (goals.cal) {
+    const gh = Math.max(2, (goals.cal / maxCal) * 110);
+    const lineEl = document.createElement("div");
+    lineEl.className = "chart-goal-line";
+    lineEl.style.bottom = (gh + BAR_LABEL_OFFSET) + "px";
+    lineEl.style.borderTopColor = "#2563eb";
+    lineEl.setAttribute("data-label", `יעד: ${goals.cal} קל׳`);
+    calChartGrid.appendChild(lineEl);
+  }
+  [
+    { key: "protein", color: "#15803d", label: "יעד חלבון" },
+    { key: "carbs",   color: "#c2410c", label: "יעד פח׳"   },
+    { key: "fat",     color: "#7e22ce", label: "יעד שומ׳"  },
+  ].forEach(({ key, color, label }) => {
+    const gv = goals[key];
+    if (!gv) return;
+    const gh = Math.max(2, (gv / maxMacro) * 110);
+    const lineEl = document.createElement("div");
+    lineEl.className = "chart-goal-line";
+    lineEl.style.bottom = (gh + BAR_LABEL_OFFSET) + "px";
+    lineEl.style.borderTopColor = color;
+    lineEl.setAttribute("data-label", `${label}: ${gv}ג׳`);
+    macroChartGrid.appendChild(lineEl);
   });
 }
 
@@ -1318,6 +1355,7 @@ function initGoalsSection() {
     goals.carbs   = parseFloat(document.getElementById("goalCarbs").value)   || "";
     goals.fat     = parseFloat(document.getElementById("goalFat").value)     || "";
     saveGoals();
+    renderChart();
     statusEl.textContent = "היעדים נשמרו";
     setTimeout(() => statusEl.textContent = "", 1800);
   });
