@@ -690,11 +690,19 @@ function renderChart() {
     const macroEl = document.createElement("div");
     macroEl.className = "bar-group";
     macroEl.innerHTML = `
-      <div class="bar-value" style="font-size:10px;">${t.protein||0}/<span style="color:#c2410c">${t.carbs||0}</span>/<span style="color:#7e22ce">${t.fat||0}</span></div>
-      <div style="display:flex;align-items:flex-end;gap:2px;justify-content:center;">
-        <div class="bar bar-protein" style="height:${hProt}px;width:14px;" title="חלבון: ${t.protein || 0}ג׳"></div>
-        <div class="bar bar-carbs"   style="height:${hCarbs}px;width:14px;" title="פחמימות: ${t.carbs || 0}ג׳"></div>
-        <div class="bar bar-fat"     style="height:${hFat}px;width:14px;"   title="שומן: ${t.fat || 0}ג׳"></div>
+      <div style="display:flex;align-items:flex-end;gap:4px;justify-content:center;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="font-size:10px;color:#15803d;">${t.protein||0}</div>
+          <div class="bar bar-protein" style="height:${hProt}px;width:14px;" title="חלבון: ${t.protein || 0}ג׳"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="font-size:10px;color:#c2410c;">${t.carbs||0}</div>
+          <div class="bar bar-carbs" style="height:${hCarbs}px;width:14px;" title="פחמימות: ${t.carbs || 0}ג׳"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="font-size:10px;color:#7e22ce;">${t.fat||0}</div>
+          <div class="bar bar-fat" style="height:${hFat}px;width:14px;" title="שומן: ${t.fat || 0}ג׳"></div>
+        </div>
       </div>
       <div class="bar-label">${t.label}</div>
     `;
