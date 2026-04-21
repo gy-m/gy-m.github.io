@@ -45,8 +45,12 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 .chart-wrap { padding:0 16px 14px; }
 .chart-card { background:var(--section-bg); border:1px solid var(--section-border); border-radius:14px; padding:12px; }
 .chart-grid { display:flex; align-items:flex-end; gap:10px; min-height:150px; overflow-x:auto; padding-top:6px; }
-.bar-group { min-width:52px; text-align:center; }
-.bar { width:100%; border-radius:10px 10px 0 0; background:linear-gradient(180deg,#60a5fa,#2563eb); min-height:2px; }
+.bar-cal     { background:linear-gradient(180deg,#93c5fd,#1d4ed8); }
+.bar-protein { background:linear-gradient(180deg,#4ade80,#15803d); }
+.bar-carbs   { background:linear-gradient(180deg,#fdba74,#c2410c); }
+.bar-fat     { background:linear-gradient(180deg,#d8b4fe,#7e22ce); }
+.bar-group { min-width:62px; text-align:center; }
+.bar { width:100%; border-radius:10px 10px 0 0; min-height:2px; }
 .bar-value { font-size:12px; color:var(--muted); margin-bottom:6px; }
 .bar-label { font-size:12px; margin-top:6px; white-space:nowrap; }
 .table-wrap { padding:12px; overflow:auto; -webkit-overflow-scrolling:touch; }
@@ -87,8 +91,8 @@ td.actioncell { min-width:76px; }
   .quickadd-row { grid-template-columns:repeat(4, minmax(120px,1fr)); }
   .custom-food-grid { grid-template-columns:repeat(6,1fr); }
 }
-.week-picker { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-.week-picker .title { cursor:default; pointer-events:none; }
+.week-picker-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.week-picker-row .title { cursor:default; pointer-events:none; }
 .week-picker-input { width:auto; flex:0 0 auto; min-height:38px; padding:6px 10px; }
 .week-label { font-size:14px; color:var(--muted); font-weight:600; }
 .week-date-wrapper { position:relative; display:inline-flex; flex:0 0 auto; }
@@ -283,23 +287,28 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
         </div>
       </div>
 
-      <div class="custom-food-section week-picker" id="weekPickerSection">
-        <div class="title">📅 בחר שבוע</div>
-        <span class="week-date-wrapper">
-          <span id="weekDateDisplay" class="week-date-display">DD/MM/YYYY</span>
-          <input type="date" id="weekDateInput" class="week-picker-input">
-        </span>
-        <span id="weekLabel" class="week-label"></span>
+      <div class="custom-food-section" id="weekPickerSection">
+        <div class="week-picker-row">
+          <span class="title">📅 בחר שבוע</span>
+          <span class="week-date-wrapper">
+            <span id="weekDateDisplay" class="week-date-display">DD/MM/YYYY</span>
+            <input type="date" id="weekDateInput" class="week-picker-input">
+          </span>
+          <span id="weekLabel" class="week-label"></span>
+        </div>
+        <div class="week-picker-row" style="margin-top:8px;">
+          <span class="title">📆 בחר יום</span>
+          <select id="quickDay" class="week-picker-input"></select>
+        </div>
       </div>
 
-      <div class="quickadd custom-food-section open" id="quickAddSection">
+      <div class="quickadd custom-food-section" id="quickAddSection">
         <div class="title" id="quickAddToggle">
           <span>⚡ הוספה מהירה</span>
           <span class="toggle-icon">+</span>
         </div>
         <div class="custom-food-body">
         <div class="quickadd-row">
-          <select id="quickDay"></select>
           <select id="quickMeal"></select>
           <input id="quickQty" type="number" min="0" step="0.25" value="1" placeholder="כמות">
           <button id="quickAddBtn" class="small" style="background:#065f46;color:#fff;">הוסף לשורה פנויה</button>
@@ -394,9 +403,21 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
     </div>
 
     <div class="chart-wrap">
+      <div class="chart-card" style="margin-bottom:12px;">
+        <div class="chart-title">🔥 קלוריות ליום</div>
+        <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-cal"></span>קלוריות</span>
+        </div>
+        <div class="chart-grid" id="calChartGrid"></div>
+      </div>
       <div class="chart-card">
-        <div class="chart-title">קלוריות ליום</div>
-        <div class="chart-grid" id="chartGrid"></div>
+        <div class="chart-title">🥗 מאקרו ליום</div>
+        <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-protein"></span>חלבון</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-carbs"></span>פחמימות</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-left:3px;" class="bar bar-fat"></span>שומן</span>
+        </div>
+        <div class="chart-grid" id="macroChartGrid"></div>
       </div>
     </div>
 
@@ -428,7 +449,9 @@ let FOODS = [];
 const FOODS_FALLBACK = [
   {"name": "אנטריקוט",                "unit": "מנה",                                              "cal": 810, "protein": 75,  "carbs": 0,   "fat": 60},
   {"name": "ארוחה - א\"ב כתומה",      "unit": "מנה",                                              "cal": 650, "protein": 35,  "carbs": 70,  "fat": 25},
-  {"name": "בקבוק",                   "unit": "330 מ״ל",                                           "cal": 155, "protein": 1,   "carbs": 13,  "fat": 0},
+  {"name": "בקבוק בירה",              "unit": "330 מ״ל",                                           "cal": 150, "protein": 1,   "carbs": 13,  "fat": 0},
+  {"name": "ביצה",                    "unit": "יחידה (~55 גרם)",                                   "cal": 78,  "protein": 6,   "carbs": 0.6, "fat": 5},
+  {"name": "קציצה (עגל עם שומן כבש)","unit": "יחידה (~80 גרם)",                                   "cal": 220, "protein": 17,  "carbs": 3,   "fat": 15},
   {"name": "גבינה צהובה",             "unit": "פרוסה (~28 גרם)",                                  "cal": 100, "protein": 7,   "carbs": 0.5, "fat": 7.5},
   {"name": "גרעיני חמניה",            "unit": "חופן (~30 גרם)",                                   "cal": 180, "protein": 6,   "carbs": 6,   "fat": 15},
   {"name": "זיתים",                   "unit": "10 יחידות",                                        "cal": 45,  "protein": 0.4, "carbs": 2.5, "fat": 4.5},
@@ -532,7 +555,8 @@ function getAllFoods() {
 
 const tbody = document.getElementById("tbody");
 const statusEl = document.getElementById("status");
-const chartGrid = document.getElementById("chartGrid");
+const calChartGrid   = document.getElementById("calChartGrid");
+const macroChartGrid = document.getElementById("macroChartGrid");
 
 function buildDefaultRows() {
   return [];
@@ -572,7 +596,7 @@ function loadState() {
 }
 
 let state = loadState();
-let collapsedDays = new Set();
+let collapsedDays = new Set([0, 1, 2, 3, 4, 5, 6]);
 
 function saveState(message = "נשמר אוטומטית") {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -634,16 +658,55 @@ function dayTotals(dayIndex) {
   return { cal: sum("cal"), protein: sum("protein"), carbs: sum("carbs"), fat: sum("fat") };
 }
 
+function calcBarHeight(value, max) {
+  return Math.max(2, ((value || 0) / max) * 110);
+}
+
 function renderChart() {
-  chartGrid.innerHTML = "";
-  const totals = DAYS.map((d, i) => ({ label: d[1], cal: dayTotals(i).cal || 0 }));
-  const max = Math.max(...totals.map(t => t.cal), 100);
+  calChartGrid.innerHTML = "";
+  macroChartGrid.innerHTML = "";
+  const totals = DAYS.map((d, i) => ({ label: d[1], ...dayTotals(i) }));
+  const maxCal   = Math.max(...totals.map(t => t.cal     || 0), 100);
+  const maxMacro = Math.max(...totals.map(t => Math.max(t.protein || 0, t.carbs || 0, t.fat || 0)), 1);
   totals.forEach(t => {
-    const h = Math.max(2, (t.cal / max) * 110);
-    const el = document.createElement("div");
-    el.className = "bar-group";
-    el.innerHTML = `<div class="bar-value">${t.cal}</div><div class="bar" style="height:${h}px"></div><div class="bar-label">${t.label}</div>`;
-    chartGrid.appendChild(el);
+    const hCal   = calcBarHeight(t.cal,     maxCal);
+    const hProt  = calcBarHeight(t.protein, maxMacro);
+    const hCarbs = calcBarHeight(t.carbs,   maxMacro);
+    const hFat   = calcBarHeight(t.fat,     maxMacro);
+
+    // calories chart column
+    const calEl = document.createElement("div");
+    calEl.className = "bar-group";
+    calEl.innerHTML = `
+      <div class="bar-value">${t.cal || 0}</div>
+      <div style="display:flex;align-items:flex-end;gap:2px;justify-content:center;">
+        <div class="bar bar-cal" style="height:${hCal}px;width:22px;" title="קלוריות: ${t.cal || 0}"></div>
+      </div>
+      <div class="bar-label">${t.label}</div>
+    `;
+    calChartGrid.appendChild(calEl);
+
+    // macros chart column
+    const macroEl = document.createElement("div");
+    macroEl.className = "bar-group";
+    macroEl.innerHTML = `
+      <div style="display:flex;align-items:flex-end;gap:4px;justify-content:center;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="font-size:10px;color:#15803d;">${t.protein||0}</div>
+          <div class="bar bar-protein" style="height:${hProt}px;width:14px;" title="חלבון: ${t.protein || 0}ג׳"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="font-size:10px;color:#c2410c;">${t.carbs||0}</div>
+          <div class="bar bar-carbs" style="height:${hCarbs}px;width:14px;" title="פחמימות: ${t.carbs || 0}ג׳"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="font-size:10px;color:#7e22ce;">${t.fat||0}</div>
+          <div class="bar bar-fat" style="height:${hFat}px;width:14px;" title="שומן: ${t.fat || 0}ג׳"></div>
+        </div>
+      </div>
+      <div class="bar-label">${t.label}</div>
+    `;
+    macroChartGrid.appendChild(macroEl);
   });
 }
 
@@ -1100,12 +1163,25 @@ document.getElementById("clearStorageBtn").addEventListener("click", () => {
   render();
 })();
 
-function updateDaySelect() {
+function updateDaySelect(useToday = false) {
   const daySel = document.getElementById("quickDay");
   if (!daySel) return;
   const prev = parseInt(daySel.value, 10);
   daySel.innerHTML = DAYS.map((d, i) => `<option value="${i}">${d[0]} · ${d[1]}</option>`).join("");
-  daySel.value = (!isNaN(prev) && prev < DAYS.length) ? String(prev) : "0";
+  if (useToday) {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const weekStart = new Date(currentWeekSunday);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    if (now >= weekStart && now <= weekEnd) {
+      daySel.value = String(now.getDay());
+    } else {
+      daySel.value = "0";
+    }
+  } else {
+    daySel.value = (!isNaN(prev) && prev < DAYS.length) ? String(prev) : "0";
+  }
 }
 
 function updateWeekLabel() {
@@ -1124,7 +1200,7 @@ function updateWeekDateDisplay(date) {
 }
 
 function initWeekPicker() {
-  updateDaySelect();
+  updateDaySelect(true);
   updateWeekLabel();
   const input = document.getElementById("weekDateInput");
   if (!input) return;
