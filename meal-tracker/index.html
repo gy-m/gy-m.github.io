@@ -780,18 +780,20 @@ function renderChart() {
   const labelOffsets = [];
   
   macroGoalLines.forEach((line, index) => {
-    let offset = -16; // Default label position (above the line)
+    let offset = -16; // Default label position (above the line, in CSS pixels from the line)
     
-    // Check if this line is too close to previous lines
+    // Check if this line's label would overlap with previous lines' labels
     for (let i = 0; i < index; i++) {
       const prevLine = macroGoalLines[i];
       const prevOffset = labelOffsets[i];
-      const heightDiff = line.gh - prevLine.gh;
-      const labelPosDiff = heightDiff + (offset - prevOffset);
       
-      // If labels would overlap, push this label higher
-      if (Math.abs(labelPosDiff) < MIN_LABEL_SPACING) {
-        offset = prevOffset - MIN_LABEL_SPACING - (heightDiff);
+      // Calculate actual positions in the chart (bottom position + label offset)
+      const prevLabelPos = prevLine.gh + prevOffset;
+      const currentLabelPos = line.gh + offset;
+      
+      // If labels are too close, push current label higher
+      if (currentLabelPos - prevLabelPos < MIN_LABEL_SPACING) {
+        offset = prevLabelPos + MIN_LABEL_SPACING - line.gh;
       }
     }
     
