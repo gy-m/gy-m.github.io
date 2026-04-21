@@ -53,7 +53,7 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
   content:attr(data-label);
   position:absolute; right:4px; top:-16px;
   font-size:10px; font-weight:700;
-  background:rgba(255,255,255,0.85); padding:0 3px; border-radius:3px;
+  color:var(--label-color, #333);
 }
 .bar-cal     { background:linear-gradient(180deg,#93c5fd,#1d4ed8); }
 .bar-protein { background:linear-gradient(180deg,#4ade80,#15803d); }
@@ -726,6 +726,7 @@ function renderChart() {
     lineEl.className = "chart-goal-line";
     lineEl.style.bottom = (gh + BAR_LABEL_OFFSET) + "px";
     lineEl.style.borderTopColor = "#2563eb";
+    lineEl.style.setProperty("--label-color", "#2563eb");
     lineEl.setAttribute("data-label", `יעד: ${goals.cal} קל׳`);
     calChartGrid.appendChild(lineEl);
   }
@@ -741,6 +742,7 @@ function renderChart() {
     lineEl.className = "chart-goal-line";
     lineEl.style.bottom = (gh + BAR_LABEL_OFFSET) + "px";
     lineEl.style.borderTopColor = color;
+    lineEl.style.setProperty("--label-color", color);
     lineEl.setAttribute("data-label", `${label}: ${gv}ג׳`);
     macroChartGrid.appendChild(lineEl);
   });
