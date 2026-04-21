@@ -450,27 +450,40 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
           <span>הצג תוויות יעדים</span>
         </label>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:11px;">
-        <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-          <input type="checkbox" id="showNutritionCal" checked style="width:auto;min-height:auto;cursor:pointer;">
-          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-cal"></span>
-          <span>קלוריות</span>
-        </label>
-        <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-          <input type="checkbox" id="showNutritionProtein" checked style="width:auto;min-height:auto;cursor:pointer;">
-          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-protein"></span>
-          <span>חלבון</span>
-        </label>
-        <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-          <input type="checkbox" id="showNutritionCarbs" checked style="width:auto;min-height:auto;cursor:pointer;">
-          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-carbs"></span>
-          <span>פחמימות</span>
-        </label>
-        <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-          <input type="checkbox" id="showNutritionFat" checked style="width:auto;min-height:auto;cursor:pointer;">
-          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-fat"></span>
-          <span>שומן</span>
-        </label>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:var(--muted)">הצגת מדדים</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;">
+          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="showAllMetrics" style="width:auto;min-height:auto;cursor:pointer;">
+            <span>הצג את כלל המדדים</span>
+          </label>
+          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="hideAllMetrics" style="width:auto;min-height:auto;cursor:pointer;">
+            <span>הסתר את כלל המדדים</span>
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;">
+          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="showNutritionCal" checked style="width:auto;min-height:auto;cursor:pointer;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-cal"></span>
+            <span>קלוריות</span>
+          </label>
+          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="showNutritionProtein" checked style="width:auto;min-height:auto;cursor:pointer;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-protein"></span>
+            <span>חלבון</span>
+          </label>
+          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="showNutritionCarbs" checked style="width:auto;min-height:auto;cursor:pointer;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-carbs"></span>
+            <span>פחמימות</span>
+          </label>
+          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="showNutritionFat" checked style="width:auto;min-height:auto;cursor:pointer;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-fat"></span>
+            <span>שומן</span>
+          </label>
+        </div>
       </div>
       <div class="chart-card" style="margin-bottom:12px;">
         <div class="chart-title">🍎 ערכים תזונתיים ליום הנבחר</div>
@@ -1636,6 +1649,55 @@ function initGoalsSection() {
   setupMacroBarToggle("showNutritionProtein", "hide-protein");
   setupMacroBarToggle("showNutritionCarbs", "hide-carbs");
   setupMacroBarToggle("showNutritionFat", "hide-fat");
+
+  // Handle "show all metrics" checkbox
+  const showAllCheckbox = document.getElementById("showAllMetrics");
+  const hideAllCheckbox = document.getElementById("hideAllMetrics");
+  const metricCheckboxes = [
+    document.getElementById("showNutritionCal"),
+    document.getElementById("showNutritionProtein"),
+    document.getElementById("showNutritionCarbs"),
+    document.getElementById("showNutritionFat")
+  ];
+
+  if (showAllCheckbox) {
+    showAllCheckbox.addEventListener("change", () => {
+      if (showAllCheckbox.checked) {
+        metricCheckboxes.forEach(checkbox => {
+          if (checkbox && !checkbox.checked) {
+            checkbox.checked = true;
+            checkbox.dispatchEvent(new Event('change'));
+          }
+        });
+        // Uncheck "hide all" checkbox
+        if (hideAllCheckbox) {
+          hideAllCheckbox.checked = false;
+        }
+        // Uncheck the "show all" checkbox itself after action
+        showAllCheckbox.checked = false;
+      }
+    });
+  }
+
+  // Handle "hide all metrics" checkbox
+  if (hideAllCheckbox) {
+    hideAllCheckbox.addEventListener("change", () => {
+      if (hideAllCheckbox.checked) {
+        metricCheckboxes.forEach(checkbox => {
+          if (checkbox && checkbox.checked) {
+            checkbox.checked = false;
+            checkbox.dispatchEvent(new Event('change'));
+          }
+        });
+        // Uncheck "show all" checkbox
+        if (showAllCheckbox) {
+          showAllCheckbox.checked = false;
+        }
+        // Uncheck the "hide all" checkbox itself after action
+        hideAllCheckbox.checked = false;
+      }
+    });
+  }
 }
 
 function renderCustomFoodList() {
