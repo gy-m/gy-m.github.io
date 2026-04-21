@@ -606,6 +606,7 @@ const statusEl = document.getElementById("status");
 const calChartGrid   = document.getElementById("calChartGrid");
 const selectedDayChartGrid = document.getElementById("selectedDayChartGrid");
 const macroChartGrid = document.getElementById("macroChartGrid");
+const quickDaySelect = document.getElementById("quickDay");
 
 function buildDefaultRows() {
   return [];
@@ -712,6 +713,10 @@ function calcBarHeight(value, max) {
 }
 
 function renderChart() {
+  // Constants for goal line positioning
+  const BAR_LABEL_OFFSET = 20; // 20px offset = bar-label height below bars
+  const MIN_LABEL_SPACING = 18; // Minimum pixels between labels
+  
   calChartGrid.innerHTML = "";
   selectedDayChartGrid.innerHTML = "";
   macroChartGrid.innerHTML = "";
@@ -760,8 +765,7 @@ function renderChart() {
   });
 
   // Render selected day chart
-  const quickDay = document.getElementById("quickDay");
-  const selectedDayIndex = quickDay ? parseInt(quickDay.value, 10) : 0;
+  const selectedDayIndex = quickDaySelect ? parseInt(quickDaySelect.value, 10) : 0;
   if (!isNaN(selectedDayIndex) && selectedDayIndex >= 0 && selectedDayIndex < DAYS.length) {
     const selectedDayData = dayTotals(selectedDayIndex);
     const selectedDayLabel = DAYS[selectedDayIndex][1];
@@ -839,9 +843,7 @@ function renderChart() {
     });
   }
 
-  // Goal indicator lines (20px offset = bar-label height below bars)
-  const BAR_LABEL_OFFSET = 20;
-  const MIN_LABEL_SPACING = 18;
+  // Goal indicator lines for calorie chart
   if (goals.cal) {
     const gh = Math.max(2, (goals.cal / maxCal) * 110);
     const lineEl = document.createElement("div");
@@ -1408,7 +1410,6 @@ function initWeekPicker() {
   updateWeekDateDisplay(currentWeekSunday);
 
   // Add event listener for quickDay dropdown
-  const quickDaySelect = document.getElementById("quickDay");
   if (quickDaySelect) {
     quickDaySelect.addEventListener("change", () => {
       renderChart();
