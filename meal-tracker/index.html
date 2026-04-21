@@ -72,6 +72,10 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
 .hide-protein .bar-container-protein { display:none !important; }
 .hide-carbs .bar-container-carbs { display:none !important; }
 .hide-fat .bar-container-fat { display:none !important; }
+.hide-cal .chart-goal-line.goal-cal { display:none !important; }
+.hide-protein .chart-goal-line.goal-protein { display:none !important; }
+.hide-carbs .chart-goal-line.goal-carbs { display:none !important; }
+.hide-fat .chart-goal-line.goal-fat { display:none !important; }
 .bar-group { min-width:72px; text-align:center; }
 @media (max-width:599px) {
   .bar-group { min-width:40px; flex:1; max-width:none; }
@@ -446,56 +450,34 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
           <span>הצג תוויות יעדים</span>
         </label>
       </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:11px;">
+        <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" id="showNutritionCal" checked style="width:auto;min-height:auto;cursor:pointer;">
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-cal"></span>
+          <span>קלוריות</span>
+        </label>
+        <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" id="showNutritionProtein" checked style="width:auto;min-height:auto;cursor:pointer;">
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-protein"></span>
+          <span>חלבון</span>
+        </label>
+        <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" id="showNutritionCarbs" checked style="width:auto;min-height:auto;cursor:pointer;">
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-carbs"></span>
+          <span>פחמימות</span>
+        </label>
+        <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" id="showNutritionFat" checked style="width:auto;min-height:auto;cursor:pointer;">
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-fat"></span>
+          <span>שומן</span>
+        </label>
+      </div>
       <div class="chart-card" style="margin-bottom:12px;">
         <div class="chart-title">🍎 ערכים תזונתיים ליום הנבחר</div>
-        <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
-          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <input type="checkbox" id="showSelectedDayCal" checked style="width:auto;min-height:auto;cursor:pointer;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-cal"></span>
-            <span>קלוריות</span>
-          </label>
-          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <input type="checkbox" id="showSelectedDayProtein" checked style="width:auto;min-height:auto;cursor:pointer;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-protein"></span>
-            <span>חלבון</span>
-          </label>
-          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <input type="checkbox" id="showSelectedDayCarbs" checked style="width:auto;min-height:auto;cursor:pointer;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-carbs"></span>
-            <span>פחמימות</span>
-          </label>
-          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <input type="checkbox" id="showSelectedDayFat" checked style="width:auto;min-height:auto;cursor:pointer;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-fat"></span>
-            <span>שומן</span>
-          </label>
-        </div>
         <div class="chart-grid" id="selectedDayChartGrid"></div>
       </div>
       <div class="chart-card" style="margin-bottom:12px;">
         <div class="chart-title">🥗 ערכים תזונתיים לשבוע (הפוך את המסך)</div>
-        <div style="font-size:11px;color:var(--muted);margin:4px 0 6px;display:flex;gap:10px;flex-wrap:wrap;">
-          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <input type="checkbox" id="showMacroCal" checked style="width:auto;min-height:auto;cursor:pointer;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-cal"></span>
-            <span>קלוריות</span>
-          </label>
-          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <input type="checkbox" id="showMacroProtein" checked style="width:auto;min-height:auto;cursor:pointer;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-protein"></span>
-            <span>חלבון</span>
-          </label>
-          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <input type="checkbox" id="showMacroCarbs" checked style="width:auto;min-height:auto;cursor:pointer;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-carbs"></span>
-            <span>פחמימות</span>
-          </label>
-          <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <input type="checkbox" id="showMacroFat" checked style="width:auto;min-height:auto;cursor:pointer;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;" class="bar bar-fat"></span>
-            <span>שומן</span>
-          </label>
-        </div>
         <div class="chart-grid" id="macroChartGrid"></div>
       </div>
       <div class="chart-card custom-food-section" id="calChartSection">
@@ -863,7 +845,7 @@ function renderChart() {
         const gv = goals[key];
         if (!gv) return null;
         const gh = Math.max(2, (gv / max) * 110);
-        return { gh, color, label, value: gv, unit };
+        return { key, gh, color, label, value: gv, unit };
       }).filter(Boolean);
 
       selectedDayGoalLines.sort((a, b) => a.gh - b.gh);
@@ -885,7 +867,7 @@ function renderChart() {
 
       selectedDayGoalLines.forEach((line, index) => {
         const lineEl = document.createElement("div");
-        lineEl.className = "chart-goal-line";
+        lineEl.className = `chart-goal-line goal-${line.key}`;
         lineEl.style.bottom = (line.gh + BAR_LABEL_OFFSET) + "px";
         lineEl.style.borderTopColor = line.color;
         lineEl.style.setProperty("--label-color", line.color);
@@ -903,7 +885,7 @@ function renderChart() {
   if (goals.cal) {
     const gh = Math.max(2, (goals.cal / maxCal) * 110);
     const lineEl = document.createElement("div");
-    lineEl.className = "chart-goal-line";
+    lineEl.className = "chart-goal-line goal-cal";
     lineEl.style.bottom = (gh + BAR_LABEL_OFFSET) + "px";
     lineEl.style.borderTopColor = "#2563eb";
     lineEl.style.setProperty("--label-color", "#2563eb");
@@ -919,13 +901,13 @@ function renderChart() {
     const gv = goals[key];
     if (!gv) return null;
     const gh = Math.max(2, (gv / max) * 110);
-    return { gh, color, label, value: gv, unit };
+    return { key, gh, color, label, value: gv, unit };
   }).filter(Boolean);
   
   // Add calories goal line separately (uses different scale)
   if (goals.cal) {
     const gh = Math.max(2, (goals.cal / maxCal) * 110);
-    macroGoalLines.push({ gh, color: "#2563eb", label: "יעד קל׳", value: goals.cal, unit: "" });
+    macroGoalLines.push({ key: "cal", gh, color: "#2563eb", label: "יעד קל׳", value: goals.cal, unit: "" });
   }
 
   // Sort by height (bottom position) to process from bottom to top
@@ -958,7 +940,7 @@ function renderChart() {
   // Render the goal lines with adjusted label positions
   macroGoalLines.forEach((line, index) => {
     const lineEl = document.createElement("div");
-    lineEl.className = "chart-goal-line";
+    lineEl.className = `chart-goal-line goal-${line.key}`;
     lineEl.style.bottom = (line.gh + BAR_LABEL_OFFSET) + "px";
     lineEl.style.borderTopColor = line.color;
     lineEl.style.setProperty("--label-color", line.color);
@@ -1650,16 +1632,10 @@ function initGoalsSection() {
     });
   };
   
-  setupMacroBarToggle("showMacroCal", "hide-cal");
-  setupMacroBarToggle("showMacroProtein", "hide-protein");
-  setupMacroBarToggle("showMacroCarbs", "hide-carbs");
-  setupMacroBarToggle("showMacroFat", "hide-fat");
-  
-  // Toggle selected day chart bars visibility
-  setupMacroBarToggle("showSelectedDayCal", "hide-cal");
-  setupMacroBarToggle("showSelectedDayProtein", "hide-protein");
-  setupMacroBarToggle("showSelectedDayCarbs", "hide-carbs");
-  setupMacroBarToggle("showSelectedDayFat", "hide-fat");
+  setupMacroBarToggle("showNutritionCal", "hide-cal");
+  setupMacroBarToggle("showNutritionProtein", "hide-protein");
+  setupMacroBarToggle("showNutritionCarbs", "hide-carbs");
+  setupMacroBarToggle("showNutritionFat", "hide-fat");
 }
 
 function renderCustomFoodList() {
