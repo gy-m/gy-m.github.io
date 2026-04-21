@@ -53,13 +53,13 @@ button.small { padding:10px 12px; font-size:13px; background:#eef2ff; color:#1e3
   content:attr(data-label);
   position:absolute; right:4px; top:-16px;
   font-size:10px; font-weight:700;
-  background:rgba(255,255,255,0.85); padding:0 3px; border-radius:3px;
+  color:var(--label-color, #333);
 }
 .bar-cal     { background:linear-gradient(180deg,#93c5fd,#1d4ed8); }
 .bar-protein { background:linear-gradient(180deg,#4ade80,#15803d); }
 .bar-carbs   { background:linear-gradient(180deg,#fdba74,#c2410c); }
 .bar-fat     { background:linear-gradient(180deg,#d8b4fe,#7e22ce); }
-.bar-group { min-width:62px; text-align:center; }
+.bar-group { min-width:72px; text-align:center; }
 .bar { width:100%; border-radius:10px 10px 0 0; min-height:2px; }
 .bar-value { font-size:12px; color:var(--muted); margin-bottom:6px; }
 .bar-label { font-size:12px; margin-top:6px; white-space:nowrap; }
@@ -699,18 +699,18 @@ function renderChart() {
     const macroEl = document.createElement("div");
     macroEl.className = "bar-group";
     macroEl.innerHTML = `
-      <div style="display:flex;align-items:flex-end;gap:4px;justify-content:center;">
+      <div style="display:flex;align-items:flex-end;gap:6px;justify-content:center;">
         <div style="display:flex;flex-direction:column;align-items:center;">
-          <div style="font-size:10px;color:#15803d;">${t.protein||0}</div>
-          <div class="bar bar-protein" style="height:${hProt}px;width:14px;" title="חלבון: ${t.protein || 0}ג׳"></div>
+          <div style="font-size:10px;color:#15803d;min-width:20px;">${t.protein||0}</div>
+          <div class="bar bar-protein" style="height:${hProt}px;width:18px;" title="חלבון: ${t.protein || 0}ג׳"></div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;">
-          <div style="font-size:10px;color:#c2410c;">${t.carbs||0}</div>
-          <div class="bar bar-carbs" style="height:${hCarbs}px;width:14px;" title="פחמימות: ${t.carbs || 0}ג׳"></div>
+          <div style="font-size:10px;color:#c2410c;min-width:20px;">${t.carbs||0}</div>
+          <div class="bar bar-carbs" style="height:${hCarbs}px;width:18px;" title="פחמימות: ${t.carbs || 0}ג׳"></div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;">
-          <div style="font-size:10px;color:#7e22ce;">${t.fat||0}</div>
-          <div class="bar bar-fat" style="height:${hFat}px;width:14px;" title="שומן: ${t.fat || 0}ג׳"></div>
+          <div style="font-size:10px;color:#7e22ce;min-width:20px;">${t.fat||0}</div>
+          <div class="bar bar-fat" style="height:${hFat}px;width:18px;" title="שומן: ${t.fat || 0}ג׳"></div>
         </div>
       </div>
       <div class="bar-label">${t.label}</div>
@@ -726,6 +726,7 @@ function renderChart() {
     lineEl.className = "chart-goal-line";
     lineEl.style.bottom = (gh + BAR_LABEL_OFFSET) + "px";
     lineEl.style.borderTopColor = "#2563eb";
+    lineEl.style.setProperty("--label-color", "#2563eb");
     lineEl.setAttribute("data-label", `יעד: ${goals.cal} קל׳`);
     calChartGrid.appendChild(lineEl);
   }
@@ -741,6 +742,7 @@ function renderChart() {
     lineEl.className = "chart-goal-line";
     lineEl.style.bottom = (gh + BAR_LABEL_OFFSET) + "px";
     lineEl.style.borderTopColor = color;
+    lineEl.style.setProperty("--label-color", color);
     lineEl.setAttribute("data-label", `${label}: ${gv}ג׳`);
     macroChartGrid.appendChild(lineEl);
   });
