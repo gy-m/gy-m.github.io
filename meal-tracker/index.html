@@ -337,6 +337,10 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
           <span class="title">📆 בחר יום</span>
           <select id="quickDay" class="week-picker-input"></select>
         </div>
+        <div class="week-picker-row" style="margin-top:8px;">
+          <span class="title">🍽️ בחר ארוחה</span>
+          <select id="quickMeal" class="week-picker-input"></select>
+        </div>
       </div>
 
       <div class="quickadd custom-food-section" id="quickAddSection">
@@ -346,7 +350,6 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
         </div>
         <div class="custom-food-body">
         <div class="quickadd-row">
-          <select id="quickMeal"></select>
           <input id="quickQty" type="number" min="0" step="0.25" value="1" placeholder="כמות">
           <button id="quickAddBtn" class="small" style="background:#065f46;color:#fff;">הוסף לשורה פנויה</button>
         </div>
@@ -442,7 +445,7 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
     <div class="chart-wrap">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
         <label style="font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;">
-          <input type="checkbox" id="showGoalLines" checked style="width:auto;min-height:auto;cursor:pointer;">
+          <input type="checkbox" id="showGoalLines" style="width:auto;min-height:auto;cursor:pointer;">
           <span>הצג קווי יעד</span>
         </label>
         <label style="font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;">
@@ -483,9 +486,14 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
         <div class="chart-title">🍎 ערכים תזונתיים ליום הנבחר</div>
         <div class="chart-grid" id="selectedDayChartGrid"></div>
       </div>
-      <div class="chart-card" style="margin-bottom:12px;">
-        <div class="chart-title">🥗 ערכים תזונתיים לשבוע (הפוך את המסך)</div>
-        <div class="chart-grid" id="macroChartGrid"></div>
+      <div class="chart-card custom-food-section" style="margin-bottom:12px;" id="weeklyNutritionSection">
+        <div class="title" id="weeklyNutritionToggle">
+          <span>🥗 ערכים תזונתיים לשבוע (הפוך את המסך)</span>
+          <span class="toggle-icon">+</span>
+        </div>
+        <div class="custom-food-body">
+          <div class="chart-grid" id="macroChartGrid"></div>
+        </div>
       </div>
       <div class="chart-card custom-food-section" id="calChartSection">
         <div class="title" id="calChartToggle">
@@ -1414,6 +1422,7 @@ document.getElementById("clearStorageBtn").addEventListener("click", () => {
   initWeekPicker();
   initCustomFoodSection();
   initCalChartSection();
+  initWeeklyNutritionSection();
   render();
 })();
 
@@ -1570,6 +1579,14 @@ function initCalChartSection() {
   }
 }
 
+function initWeeklyNutritionSection() {
+  const section = document.getElementById("weeklyNutritionSection");
+  const toggle = document.getElementById("weeklyNutritionToggle");
+  if (toggle && section) {
+    toggle.addEventListener("click", () => section.classList.toggle("open"));
+  }
+}
+
 function initGoalsSection() {
   const section = document.getElementById("goalsSection");
   const toggle = document.getElementById("goalsSectionToggle");
@@ -1600,6 +1617,9 @@ function initGoalsSection() {
     console.error("Required elements not found:", { showGoalLinesCheckbox, chartWrap });
     return;
   }
+  
+  // Default state: goal lines hidden (unchecked)
+  chartWrap.classList.add("hide-goal-lines");
   
   showGoalLinesCheckbox.addEventListener("change", () => {
     if (showGoalLinesCheckbox.checked) {
