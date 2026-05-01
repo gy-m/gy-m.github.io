@@ -294,42 +294,6 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
     <div class="status" id="status"></div>
 
     <div class="toolbar">
-      <div class="custom-food-section" id="weekPickerSection">
-        <div class="week-picker-row">
-          <span class="title">📅 בחר שבוע</span>
-          <span class="week-date-wrapper">
-            <span id="weekDateDisplay" class="week-date-display">DD/MM/YYYY</span>
-            <input type="date" id="weekDateInput" class="week-picker-input">
-          </span>
-          <span id="weekLabel" class="week-label"></span>
-        </div>
-        <div class="week-picker-row" style="margin-top:8px;">
-          <span class="title">📆 בחר יום</span>
-          <select id="quickDay" class="week-picker-input"></select>
-        </div>
-      </div>
-
-      <div class="quickadd custom-food-section" id="quickAddSection">
-        <div class="title" id="quickAddToggle">
-          <span>⚡ הוספה מהירה</span>
-          <span class="toggle-icon">+</span>
-        </div>
-        <div class="custom-food-body">
-        <div class="quickadd-row">
-          <select id="quickMeal"></select>
-          <input id="quickQty" type="number" min="0" step="0.25" value="1" placeholder="כמות">
-          <button id="quickAddBtn" class="small" style="background:#065f46;color:#fff;">הוסף לשורה פנויה</button>
-        </div>
-        <div class="food-picker-wrap" id="foodPickerWrap">
-          <div class="food-picker-label">בחר מזון לתוספת (ניתן לבחור כמה):</div>
-          <input type="text" id="foodPickerSearch" autocomplete="off" placeholder="חפש מזון...">
-          <div class="food-picker-list" id="foodPickerList"></div>
-          <div class="food-picker-chips" id="foodPickerChips"></div>
-          <div class="helper">בתוך הטבלה יש כפתור נקה לכל שורה.</div>
-        </div>
-        </div>
-      </div>
-
       <div class="custom-food-section" id="goalsSection">
         <div class="title" id="goalsSectionToggle">
           <span>🎯 יעדים יומיים</span>
@@ -357,6 +321,45 @@ tr.day-header-row.collapsed td { border-bottom:2px solid var(--section-border); 
           <div style="margin-top:10px;">
             <button id="goalsSaveBtn" class="small" style="background:#065f46;color:#fff;">שמור יעדים</button>
           </div>
+        </div>
+      </div>
+
+      <div class="custom-food-section" id="weekPickerSection">
+        <div class="week-picker-row">
+          <span class="title">📅 בחר שבוע</span>
+          <span class="week-date-wrapper">
+            <span id="weekDateDisplay" class="week-date-display">DD/MM/YYYY</span>
+            <input type="date" id="weekDateInput" class="week-picker-input">
+          </span>
+          <span id="weekLabel" class="week-label"></span>
+        </div>
+        <div class="week-picker-row" style="margin-top:8px;">
+          <span class="title">📆 בחר יום</span>
+          <select id="quickDay" class="week-picker-input"></select>
+        </div>
+        <div class="week-picker-row" style="margin-top:8px;">
+          <span class="title">🍽️ בחר ארוחה</span>
+          <select id="quickMeal" class="week-picker-input"></select>
+        </div>
+      </div>
+
+      <div class="quickadd custom-food-section" id="quickAddSection">
+        <div class="title" id="quickAddToggle">
+          <span>⚡ הוספה מהירה</span>
+          <span class="toggle-icon">+</span>
+        </div>
+        <div class="custom-food-body">
+        <div class="quickadd-row">
+          <input id="quickQty" type="number" min="0" step="0.25" value="1" placeholder="כמות">
+          <button id="quickAddBtn" class="small" style="background:#065f46;color:#fff;">הוסף לשורה פנויה</button>
+        </div>
+        <div class="food-picker-wrap" id="foodPickerWrap">
+          <div class="food-picker-label">בחר מזון לתוספת (ניתן לבחור כמה):</div>
+          <input type="text" id="foodPickerSearch" autocomplete="off" placeholder="חפש מזון...">
+          <div class="food-picker-list" id="foodPickerList"></div>
+          <div class="food-picker-chips" id="foodPickerChips"></div>
+          <div class="helper">בתוך הטבלה יש כפתור נקה לכל שורה.</div>
+        </div>
         </div>
       </div>
 
@@ -1614,6 +1617,9 @@ function initGoalsSection() {
     console.error("Required elements not found:", { showGoalLinesCheckbox, chartWrap });
     return;
   }
+  
+  // Default state: goal lines hidden (unchecked)
+  chartWrap.classList.add("hide-goal-lines");
   
   showGoalLinesCheckbox.addEventListener("change", () => {
     if (showGoalLinesCheckbox.checked) {
